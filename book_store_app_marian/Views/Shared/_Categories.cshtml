@@ -1,0 +1,17 @@
+﻿@model book_store_app_marian.Models.ViewModel
+
+<div class="col-md-2" style="padding-right: 280px;">
+    <div class="card" style="width: 15rem;">
+        <div class="card-header">
+            Book Categories
+        </div>
+        <ul class="list-group list-group-flush">
+            @foreach (var category in Model.Categories)
+            {
+                <li class="list-group-item"><a asp-controller="Category" asp-action="ProductCategory" asp-route-id="@category.Id" class="category-style">@category.CategoryName</a></li>
+            }
+        </ul>
+
+
+    </div>
+</div>

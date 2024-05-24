@@ -1,0 +1,26 @@
+﻿@model book_store_app_marian.Models.ViewModel
+
+@{
+    ViewData["Title"] = "Delete Category " + @Model.categoriesModel.CategoryName;
+}
+
+<h2>Delete Category</h2>
+
+<h4>Are you sure you want to delete this category?</h4>
+<div>
+    <h4>>@Model.categoriesModel.CategoryName</h4>
+</div>
+
+<hr />
+<div>
+    <form asp-action="DeleteCategoryConfirmed" method="post">
+        <input type="hidden" asp-for="categoriesModel.Id" />
+
+        <div class="form-group">
+            <label asp-for="categoriesModel.CategoryName"></label>
+            <input asp-for="categoriesModel.CategoryName" class="form-control" disabled />
+        </div>
+        <input type="submit" value="Delete" class="btn btn-danger" />
+        @* <button type="submit" class="btn btn-danger">Delete Category</button> *@
+    </form>
+</div>

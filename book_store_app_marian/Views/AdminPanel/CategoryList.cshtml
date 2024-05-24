@@ -1,0 +1,43 @@
+﻿@model book_store_app_marian.Models.ViewModel
+
+@{
+    ViewData["Title"] = "Category List";
+}
+
+<h2>Category List</h2>
+
+<p>
+    <a class="btn btn-primary" asp-action="CreateCategory">Create New Category</a>
+</p>
+<div class="container-lg">
+    <div class="justify-content-center">
+        <div class="col-6">
+            <table class="table col-6">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th></th>
+                        <th>Options</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var category in Model.Categories)
+                    {
+                        <tr>
+                            <td>@category.CategoryName</td>
+                            <td></td>
+                            <td></td>
+                            <td>
+                                <a class="btn btn-primary" asp-action="EditCategory" asp-route-id="@category.Id">Edit</a> |
+                                <a class="btn btn-danger" asp-action="DeleteCategory" asp-route-id="@category.Id">Delete</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+

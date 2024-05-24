@@ -1,0 +1,31 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="col-md-9">
+    <div class="mb-4">
+        <div class="card">
+            <div class="card-header">
+                Made for you
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    @for (int i= 0; i < 6; i++)
+                    {
+                        <div class="col-sm-4 mb-3 mb-sm-0">
+                            <div class="card">
+                                <div class="book-card">
+                                    <img src="~/images/fantasy1.jpg" alt="Fantasy Product" />
+                                    <h6>Data Structures and Algorithms</h6>
+                                    <p>Learn to use Big O Notation to make your code run faster by orders of magnitude</p>
+                                    <p>Price £25.85</p>
+                                    <button class="btn btn-primary">View</button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

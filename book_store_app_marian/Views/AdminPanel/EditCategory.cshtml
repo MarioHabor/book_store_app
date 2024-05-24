@@ -1,0 +1,29 @@
+﻿@model book_store_app_marian.Models.ViewModel
+
+@{
+    ViewData["Title"] = "Edit Category";
+}
+
+<h2>Edit Category</h2>
+
+<h4>Category</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="EditCategory" method="post">
+            <input type="hidden" asp-for="categoriesModel.Id" />
+            <div class="form-group">
+                <label asp-for="categoriesModel.CategoryName" class="control-label"></label>
+                <input asp-for="categoriesModel.CategoryName" class="form-control" />
+                <span asp-validation-for="categoriesModel.CategoryName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="CategoryList">Back to List</a>
+</div>

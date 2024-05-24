@@ -1,0 +1,63 @@
+﻿@model book_store_app_marian.Models.ViewModel
+<div class="container">
+    <div class="row">
+        <div class="col-md-9">
+            <h2>@Model.SelectedCategoryName</h2>
+            <div class="row">
+                @foreach (var product in Model.Products)
+                {
+                    <div class="col-md-4 mb-4 mb-4 box-product-outer">
+                        <div class="box-product">
+                            <div class="img-wrapper">
+                                <a asp-controller="Product" asp-action="Index" asp-route-id="@product.Id">
+                                    @if (product.ProductImages != null && product.ProductImages.Any())
+                                    {
+                                        <img alt="@product.ProductName" src="@product.ProductImages.FirstOrDefault(pi => pi.MainImage)?.ProductImage"
+                                                                                class="img-fluid">
+                                    }
+                                    else {
+                                        <img alt="@product.ProductName" src="https://bootdey.com/img/Content/avatar/avatar6.png"
+                                                                                class="img-fluid">
+                                    }
+                                    
+                                </a>
+                                <div class="option">
+                                    <a href="#" data-bs-toggle="tooltip" data-bs-placement="bottom" title=""><i
+                                            class=""></i></a>
+                                    <a href="#" data-bs-toggle="tooltip" data-bs-placement="bottom" title="View"><i
+                                            class="fa fa-eye"></i></a>
+                                    <a href="#" data-bs-toggle="tooltip" data-bs-placement="bottom" title=""><i
+                                            class=""></i></a>
+                                </div>
+                            </div>
+                            <h6><a asp-controller="Product" asp-action="Index" asp-route-id="@product.Id">@product.ProductName</a></h6>
+                            <div class="price">
+                                <div>@product.Price.ToString("C")</div>
+                            </div>
+                            @* <div class="rating">
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star-half-o"></i>
+                                <a href="#">(3 reviews)</a>
+                            </div> *@
+                        </div>
+                    </div>
+                }
+            </div>
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                            <a class="page-link" asp-controller="Category" asp-action="ProductCategory"
+                                asp-route-id="@Model.Categories.First(c => c.CategoryName == Model.SelectedCategoryName).Id"
+                                asp-route-page="@i">@i</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
