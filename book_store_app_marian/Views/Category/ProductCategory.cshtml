@@ -1,8 +1,8 @@
 ﻿@model book_store_app_marian.Models.ViewModel
 <div class="container">
     <div class="row">
-        <div class="col-md-9">
-            <h2>@Model.SelectedCategoryName</h2>
+        <div class="col-md-12">
+            <h2>@Model.SelectedCategoryName Category</h2>
             <div class="row">
                 @foreach (var product in Model.Products)
                 {
@@ -22,18 +22,27 @@
                                     
                                 </a>
                                 <div class="option">
-                                    <a href="#" data-bs-toggle="tooltip" data-bs-placement="bottom" title=""><i
+                                    <a asp-controller="Product" asp-action="Index" asp-route-id="@product.Id" data-bs-toggle="tooltip" data-bs-placement="bottom" title=""><i
                                             class=""></i></a>
-                                    <a href="#" data-bs-toggle="tooltip" data-bs-placement="bottom" title="View"><i
+                                    <a asp-controller="Product" asp-action="Index" asp-route-id="@product.Id" data-bs-toggle="tooltip" data-bs-placement="bottom" title="View"><i
                                             class="fa fa-eye"></i></a>
-                                    <a href="#" data-bs-toggle="tooltip" data-bs-placement="bottom" title=""><i
+                                    <a asp-controller="Product" asp-action="Index" asp-route-id="@product.Id" data-bs-toggle="tooltip" data-bs-placement="bottom" title=""><i
                                             class=""></i></a>
                                 </div>
                             </div>
                             <h6><a asp-controller="Product" asp-action="Index" asp-route-id="@product.Id">@product.ProductName</a></h6>
-                            <div class="price">
-                                <div>@product.Price.ToString("C")</div>
+                            <div class="row justify-content-between">
+                                <div class="col-4">
+                                    <div class="price">
+                                        <div>@product.Price.ToString("C")</div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <a asp-controller="Product" asp-action="Index" asp-route-id="@product.Id" class="btn btn-primary">View</a>
+                                </div>
                             </div>
+
+
                             @* <div class="rating">
                                 <i class="fa fa-star"></i>
                                 <i class="fa fa-star"></i>

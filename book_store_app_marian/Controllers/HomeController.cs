@@ -21,9 +21,15 @@ namespace book_store_app_marian.Controllers
         public async Task<IActionResult> Index()
         {
             var categories = await _context.Categories.ToListAsync();
+
+            var products = _context.Products
+                .Include(p => p.ProductImages)
+                .Take(6).ToList();
+
             ViewModel ViewModel = new ViewModel()
             {
-                Categories = categories
+                Categories = categories,
+                Products = products
             };
             return View(ViewModel);
         }
