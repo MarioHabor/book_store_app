@@ -36,6 +36,10 @@ namespace book_store_app_marian.Controllers
                 Products = new List<Products> { product },
                 SelectedCategoryName = product.Categories?.CategoryName
             };
+            // related products view bag
+            ViewBag.RelatedProducts = _context.Products
+                .Include(p => p.ProductImages)
+                .Where(p => p.CategoryId == product.CategoryId).Take(3).ToList();
 
             return View(viewModel);
         }

@@ -477,3 +477,8 @@
 .rating i { color: #fc0 }
 .product-sorting-bar { border: 1px solid #e5e5e5 }
 /* -------------------------------------------------------------- End of Box Product -------------------------------------------------------------- */
+
+/* Related products */
+.card-related {
+    border: none;
+}
