@@ -17,6 +17,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddLogging();
 builder.Services.AddRazorPages();
 
+
 var app = builder.Build();
 
 // Seed roles and an admin user
@@ -24,6 +25,7 @@ using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+    var services = scope.ServiceProvider;
 
     string[] roleNames = { "Admin", "User" };
     IdentityResult roleResult;
@@ -56,16 +58,12 @@ using (var scope = app.Services.CreateScope())
             await userManager.AddToRoleAsync(adminUser, "Admin");
         }
     }
-}
 
-// Seed the database.
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
+    // Seed the database.
     try
     {
         var logger = services.GetRequiredService<ILogger<DbInitializer>>();
-        DbInitializer.Initialize(services, logger);
+        DbInitializer.Initialize(services, logger, userManager);
     }
     catch (Exception ex)
     {

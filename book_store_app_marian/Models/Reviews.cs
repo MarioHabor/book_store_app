@@ -25,6 +25,8 @@ namespace book_store_app_marian.Models
 
         [Required]
         [Range(1, 5, ErrorMessage = "The highest review can be 5.")]
-        public byte Likes { get; set; }
+        public byte Rating { get; set; }
+
+        public DateTime CreatedTimestamp { get; set; }
     }
 }

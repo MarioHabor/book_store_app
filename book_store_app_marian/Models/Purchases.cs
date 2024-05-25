@@ -22,6 +22,11 @@ namespace book_store_app_marian.Models
         [Required]
         public double Price { get; set; }
 
+        [Required]
+        public String Status { get; set; }
+
+        public virtual ICollection<Reviews> Reviews { get; set; }
+
         public DateTime CreatedTimestamp { get; set; }
     }
 }

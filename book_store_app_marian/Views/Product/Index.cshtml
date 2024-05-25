@@ -3,7 +3,9 @@
 @{
     var relatedProducts = ViewBag.RelatedProducts as List<book_store_app_marian.Models.Products>;
 }
-
+@{
+    ViewData["Title"] = "Book - " + @Model.Products.First().ProductName;
+}
 <div class="product-content product-wrap clearfix product-deatil">
     <div class="row mb-5">
         <div class="col-md-4 col-sm-12 col-xs-12">
@@ -68,7 +70,7 @@
         <div class="col-md-6 col-md-offset-1 col-sm-12 col-xs-12">
             <h2 class="name">
                 @Model.Products.First().ProductName
-                <small>Author by Adeline</small>
+                <small>Author: @Model.Products.First().ProductAuthor</small>
                 @* <i class="fa fa-star fa-2x text-primary"></i>
                 <i class="fa fa-star fa-2x text-primary"></i>
                 <i class="fa fa-star fa-2x text-primary"></i>
@@ -103,6 +105,9 @@
                         <p>
                             @Model.Products.First().Description
                         </p>
+                        <a href="@Url.Action("DownloadBookInfo", "Product", new { id = Model.Products.First().Id })" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-arrow-circle-down"></i> Download
+                        </a>
                     </div>
                     <div class="tab-pane fade" id="specifications">
                         <br />

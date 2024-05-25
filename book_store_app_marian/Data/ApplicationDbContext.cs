@@ -46,6 +46,9 @@ namespace book_store_app_marian.Data
                       .IsRequired();
                 entity.Property(p => p.CreatedTimestamp)
                       .IsRequired();
+                entity.Property(p => p.Description)
+                      .IsRequired()
+                      .HasColumnType("text");
                 entity.HasOne(p => p.Categories)
                       .WithMany(c => c.Products)
                       .HasForeignKey(p => p.CategoryId)
@@ -69,6 +72,7 @@ namespace book_store_app_marian.Data
                       .HasForeignKey(pi => pi.ProductId)
                       .OnDelete(DeleteBehavior.Cascade);
             });
+
         }
     }
 }

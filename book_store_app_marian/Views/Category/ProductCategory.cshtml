@@ -1,4 +1,8 @@
-﻿@model book_store_app_marian.Models.ViewModel
+﻿@{
+    ViewData["Title"] = "Category - " + @Model.SelectedCategoryName;
+}
+
+@model book_store_app_marian.Models.ViewModel
 <div class="container">
     <div class="row">
         <div class="col-md-12">
