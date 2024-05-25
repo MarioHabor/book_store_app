@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace book_store_app_marian.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdateColumnReviewsTable : Migration
+    public partial class RelationsReviewsPurchasesWithUser : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -17,38 +17,52 @@ namespace book_store_app_marian.Data.Migrations
                 newName: "Rating");
 
             migrationBuilder.AddColumn<Guid>(
-                name: "PurchasesId",
+                name: "PurchaseId",
                 table: "Reviews",
                 type: "uniqueidentifier",
-                nullable: true);
+                nullable: false,
+                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
+
+            migrationBuilder.AddColumn<string>(
+                name: "Discriminator",
+                table: "AspNetUsers",
+                type: "nvarchar(21)",
+                maxLength: 21,
+                nullable: false,
+                defaultValue: "");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Reviews_PurchasesId",
+                name: "IX_Reviews_PurchaseId",
                 table: "Reviews",
-                column: "PurchasesId");
+                column: "PurchaseId");
 
             migrationBuilder.AddForeignKey(
-                name: "FK_Reviews_Purchases_PurchasesId",
+                name: "FK_Reviews_Purchases_PurchaseId",
                 table: "Reviews",
-                column: "PurchasesId",
+                column: "PurchaseId",
                 principalTable: "Purchases",
-                principalColumn: "Id");
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Restrict);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_Reviews_Purchases_PurchasesId",
+                name: "FK_Reviews_Purchases_PurchaseId",
                 table: "Reviews");
 
             migrationBuilder.DropIndex(
-                name: "IX_Reviews_PurchasesId",
+                name: "IX_Reviews_PurchaseId",
                 table: "Reviews");
 
             migrationBuilder.DropColumn(
-                name: "PurchasesId",
+                name: "PurchaseId",
                 table: "Reviews");
+
+            migrationBuilder.DropColumn(
+                name: "Discriminator",
+                table: "AspNetUsers");
 
             migrationBuilder.RenameColumn(
                 name: "Rating",

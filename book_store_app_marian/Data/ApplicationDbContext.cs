@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using book_store_app_marian.Models;
 using System.Reflection.Emit;
+using Microsoft.AspNetCore.Identity;
 
 namespace book_store_app_marian.Data
 {
@@ -72,6 +73,27 @@ namespace book_store_app_marian.Data
                       .HasForeignKey(pi => pi.ProductId)
                       .OnDelete(DeleteBehavior.Cascade);
             });
+
+            // Configure one-to-many relationship between User and Purchase
+            builder.Entity<ApplicationUser>()
+                .HasMany(u => u.Purchases)
+                .WithOne(p => p.User)
+                .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure one-to-many relationship between Purchase and Review
+            builder.Entity<Purchases>()
+                .HasMany(p => p.Reviews)
+                .WithOne(r => r.Purchases)
+                .HasForeignKey(r => r.PurchaseId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure one-to-many relationship between User and Review
+            builder.Entity<ApplicationUser>()
+                .HasMany(u => u.Reviews)
+                .WithOne(r => r.User)
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
         }
     }

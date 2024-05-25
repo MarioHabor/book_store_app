@@ -17,7 +17,8 @@ namespace book_store_app_marian.Models
         [Required]
         [ForeignKey("IdentityUser")]
         public string UserId { get; set; }
-        public virtual IdentityUser IdentityUser { get; set; }
+        //public virtual IdentityUser IdentityUser { get; set; }
+        public virtual ApplicationUser User { get; set; }
 
         [Required]
         public double Price { get; set; }

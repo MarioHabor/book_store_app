@@ -151,14 +151,16 @@ namespace book_store_app_marian.Data
                     var purchasesList = context.Purchases.Include(p => p.Products).ToList();
 
                     // Generate reviews for users who have purchased products
-                    var reviewsFaker = new Faker<Reviews>()
-                        .RuleFor(r => r.Id, f => Guid.NewGuid())
-                        .RuleFor(r => r.ProductId, f => f.PickRandom(productsList).Id)
-                        .RuleFor(r => r.UserId, f => f.PickRandom(usersList).Id)
-                        .RuleFor(r => r.Review, f => f.Lorem.Sentence(10))
-                        .RuleFor(r => r.Rating, f => f.Random.Byte(1, 5));
+                    var reviewFaker = new Faker<Reviews>()
+                        .RuleFor(p => p.Id, f => Guid.NewGuid())
+           .RuleFor(r => r.ProductId, f => f.PickRandom(purchasesList).ProductId)
+           .RuleFor(r => r.UserId, (f, r) => purchasesList.First(p => p.ProductId == r.ProductId).UserId)
+           .RuleFor(r => r.PurchaseId, (f, r) => purchasesList.First(p => p.ProductId == r.ProductId).Id)
+           .RuleFor(r => r.Review, f => f.Lorem.Sentence(10))
+           .RuleFor(r => r.CreatedTimestamp, f => f.Date.Past())
+           .RuleFor(r => r.Rating, f => f.Random.Byte(1, 5));
 
-                    var reviews = reviewsFaker.Generate(200);
+                    var reviews = reviewFaker.Generate(200);
                     context.Reviews.AddRange(reviews);
                     context.SaveChanges();
                 }
@@ -202,6 +204,7 @@ namespace book_store_app_marian.Data
                     .RuleFor(r => r.Id, f => Guid.NewGuid())
                     .RuleFor(r => r.ProductId, f => f.PickRandom(adminPurchases).ProductId)
                     .RuleFor(r => r.UserId, f => adminUser.Id)
+                    .RuleFor(r => r.PurchaseId, (f, r) => adminPurchases.First(p => p.ProductId == r.ProductId).Id)
                     .RuleFor(r => r.Review, f => f.Lorem.Sentence(10))
                     .RuleFor(r => r.CreatedTimestamp, f => f.Date.Past())
                     .RuleFor(r => r.Rating, f => f.Random.Byte(1, 5));

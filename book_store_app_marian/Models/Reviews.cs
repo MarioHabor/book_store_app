@@ -17,7 +17,13 @@ namespace book_store_app_marian.Models
         [Required]
         [ForeignKey("IdentityUser")]
         public string UserId { get; set; }
-        public virtual IdentityUser IdentityUser { get; set; }
+        //public virtual IdentityUser IdentityUser { get; set; }
+        public virtual ApplicationUser User { get; set; }
+
+        [Required]
+        [ForeignKey("Purchases")]
+        public Guid PurchaseId { get; set; }
+        public virtual Purchases Purchases { get; set; }
 
         [Required]
         [StringLength(256, ErrorMessage = "The review cannot exceed 256 characters.")]
