@@ -7,12 +7,13 @@ using Microsoft.Extensions.Logging;
 using Bogus;
 using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using Microsoft.AspNetCore.Identity;
+using Bogus.DataSets;
 
 namespace book_store_app_marian.Data
 {
     public class DbInitializer
     {
-        public static void Initialize(IServiceProvider serviceProvider, ILogger<DbInitializer> logger)
+        public static async Task Initialize(IServiceProvider serviceProvider, ILogger<DbInitializer> logger, UserManager<IdentityUser> userManager)
         {
             using (var context = new ApplicationDbContext(
                 serviceProvider.GetRequiredService<DbContextOptions<ApplicationDbContext>>()))
@@ -50,12 +51,13 @@ namespace book_store_app_marian.Data
                     var productFaker = new Faker<Products>()
                                 .RuleFor(p => p.Id, f => Guid.NewGuid())
                                 .RuleFor(p => p.CategoryId, f => f.PickRandom(categoriesList).Id)
+                                .RuleFor(p => p.ProductAuthor, f => f.Name.FullName())
                                 .RuleFor(p => p.ProductName, f => f.Commerce.ProductName())
                                 .RuleFor(p => p.Price, f => Math.Round(f.Random.Double(10, 100), 2))
                                 .RuleFor(p => p.CreatedTimestamp, f => f.Date.Past())
-                                .RuleFor(p => p.Description, f => f.Lorem.Sentence(10)); // Generate a paragraph with 3 sentences
+                                .RuleFor(p => p.Description, f => f.Lorem.Paragraph());
 
-                    var productList = productFaker.Generate(55); // Generate 50 products
+                    var productList = productFaker.Generate(70); // Generate 70 products
 
 
                     context.Products.AddRange(productList);
@@ -105,25 +107,7 @@ namespace book_store_app_marian.Data
 
                 }
 
-                // Seed Reviews
-                if (!context.Reviews.Any())
-                {
-                    var productsList = context.Products.ToList();
-                    var usersList = context.Users.ToList();
-
-                    var reviews = new Faker<Reviews>()
-                        .RuleFor(r => r.Id, f => Guid.NewGuid())
-                        .RuleFor(r => r.ProductId, f => f.PickRandom(productsList).Id)
-                        .RuleFor(r => r.UserId, f => f.PickRandom(usersList).Id)
-                        .RuleFor(r => r.Review, f => f.Lorem.Sentence(10))
-                        .RuleFor(r => r.Likes, f => f.Random.Byte(1, 5));
-
-                    context.Reviews.AddRange(reviews.Generate(200)); // Generate 200 reviews
-                    context.SaveChanges();
-                }
-
                 // seed users
-                // Seed Users
                 if (context.Users.Count() < 20)
                 {
                     var passwordHasher = new PasswordHasher<IdentityUser>();
@@ -141,6 +125,95 @@ namespace book_store_app_marian.Data
                     context.Users.AddRange(userList);
                     context.SaveChanges();
                 }
+
+                // Seed purchases and reviews
+                if (!context.Reviews.Any())
+                {
+                    var productsList = context.Products.ToList();
+                    var usersList = context.Users.ToList();
+
+                    // Generate fake purchases
+                    if (!context.Purchases.Any())
+                    {
+                        var purchaseFaker = new Faker<Purchases>()
+                            .RuleFor(p => p.Id, f => Guid.NewGuid())
+                            .RuleFor(p => p.ProductId, f => f.PickRandom(productsList).Id)
+                            .RuleFor(p => p.UserId, f => f.PickRandom(usersList).Id)
+                            .RuleFor(p => p.Price, (f, p) => context.Products.First(prod => prod.Id == p.ProductId).Price)
+                            .RuleFor(p => p.Status, f => f.PickRandom(new[] { "Pending", "Completed", "Shipped", "Cancelled" }))
+                            .RuleFor(p => p.CreatedTimestamp, f => f.Date.Past());
+
+                        var purchases = purchaseFaker.Generate(200);
+                        context.Purchases.AddRange(purchases);
+                        context.SaveChanges();
+                    }
+
+                    var purchasesList = context.Purchases.Include(p => p.Products).ToList();
+
+                    // Generate reviews for users who have purchased products
+                    var reviewFaker = new Faker<Reviews>()
+                        .RuleFor(p => p.Id, f => Guid.NewGuid())
+                        .RuleFor(r => r.ProductId, f => f.PickRandom(purchasesList).ProductId)
+                        .RuleFor(r => r.UserId, (f, r) => purchasesList.First(p => p.ProductId == r.ProductId).UserId)
+                        .RuleFor(r => r.PurchaseId, (f, r) => purchasesList.First(p => p.ProductId == r.ProductId).Id)
+                        .RuleFor(r => r.Review, f => f.Lorem.Sentence(10))
+                        .RuleFor(r => r.CreatedTimestamp, f => f.Date.Past())
+                        .RuleFor(r => r.Rating, f => f.Random.Byte(1, 5));
+
+                    var reviews = reviewFaker.Generate(200);
+                    context.Reviews.AddRange(reviews);
+                    context.SaveChanges();
+                }
+
+                var adminEmail = "admin@admin.com";
+                var adminUser = await userManager.FindByEmailAsync(adminEmail);
+
+                if (adminUser == null)
+                {
+                    adminUser = new IdentityUser { UserName = adminEmail, Email = adminEmail };
+                    await userManager.CreateAsync(adminUser, "Admin@123");
+                }
+
+                // Seed purchases for the admin account
+                if (!context.Purchases.Any(p => p.UserId == adminUser.Id))
+                {
+                    var productsList = context.Products.ToList();
+
+                    var purchaseFaker = new Faker<Purchases>()
+                        .RuleFor(p => p.Id, f => Guid.NewGuid())
+                        .RuleFor(p => p.ProductId, f => f.PickRandom(productsList).Id)
+                        .RuleFor(p => p.UserId, f => adminUser.Id)
+                        .RuleFor(p => p.Price, (f, p) => productsList.First(prod => prod.Id == p.ProductId).Price)
+                        .RuleFor(p => p.Status, f => f.PickRandom(new[] { "Pending", "Completed", "Shipped", "Cancelled" }))
+                        .RuleFor(p => p.CreatedTimestamp, f => f.Date.Past());
+
+                    var purchases = purchaseFaker.Generate(20);
+                    context.Purchases.AddRange(purchases);
+                    await context.SaveChangesAsync();
+                }
+
+                var adminPurchases = context.Purchases
+                    .Include(p => p.Products)
+                    .Where(p => p.UserId == adminUser.Id)
+                    .ToList();
+
+                // Seed reviews for the admin account
+                if (!context.Reviews.Any(r => r.UserId == adminUser.Id))
+                {
+                    var reviewFaker = new Faker<Reviews>()
+                    .RuleFor(r => r.Id, f => Guid.NewGuid())
+                    .RuleFor(r => r.ProductId, f => f.PickRandom(adminPurchases).ProductId)
+                    .RuleFor(r => r.UserId, f => adminUser.Id)
+                    .RuleFor(r => r.PurchaseId, (f, r) => adminPurchases.First(p => p.ProductId == r.ProductId).Id)
+                    .RuleFor(r => r.Review, f => f.Lorem.Sentence(10))
+                    .RuleFor(r => r.CreatedTimestamp, f => f.Date.Past())
+                    .RuleFor(r => r.Rating, f => f.Random.Byte(1, 5));
+
+                    var AdminReviews = reviewFaker.Generate(20);
+                    context.Reviews.AddRange(AdminReviews);
+                    await context.SaveChangesAsync();
+                }
+
             }
         }
     }

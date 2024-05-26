@@ -26,10 +26,10 @@
 }
 
 .book-card img {
-        max-width: 100%;
-        height: auto;
-        margin-bottom: 15px;
-    }
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 15px;
+}
 
 .category-style {
     color: black;
@@ -486,4 +486,24 @@
 /* Related products */
 .card-related {
     border: none;
+}
+
+/* a tag decoration */
+.link-no-decor {
+    color: black;
+    text-decoration: none;
+}
+
+.link-no-decor:hover {
+    text-decoration: underline;
+}
+
+/* Reviews */
+.star-rating .fa-star {
+    font-size: 2rem;
+    cursor: pointer;
+}
+
+.text-warning {
+    color: rgb(76, 76, 255);
 }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using book_store_app_marian.Data;
 
@@ -11,9 +12,11 @@ using book_store_app_marian.Data;
 namespace book_store_app_marian.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240525154043_RelationsReviewsPurchasesWithUser")]
+    partial class RelationsReviewsPurchasesWithUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -86,6 +89,11 @@ namespace book_store_app_marian.Data.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(21)
+                        .HasColumnType("nvarchar(21)");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -137,6 +145,10 @@ namespace book_store_app_marian.Data.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("IdentityUser");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
@@ -283,11 +295,15 @@ namespace book_store_app_marian.Data.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("text");
 
                     b.Property<double>("Price")
                         .HasColumnType("float");
+
+                    b.Property<string>("ProductAuthor")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("ProductName")
                         .IsRequired()
@@ -316,6 +332,10 @@ namespace book_store_app_marian.Data.Migrations
                     b.Property<Guid>("ProductId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -335,11 +355,17 @@ namespace book_store_app_marian.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<byte>("Likes")
-                        .HasColumnType("tinyint");
+                    b.Property<DateTime>("CreatedTimestamp")
+                        .HasColumnType("datetime2");
 
                     b.Property<Guid>("ProductId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PurchaseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte>("Rating")
+                        .HasColumnType("tinyint");
 
                     b.Property<string>("Review")
                         .IsRequired()
@@ -354,9 +380,18 @@ namespace book_store_app_marian.Data.Migrations
 
                     b.HasIndex("ProductId");
 
+                    b.HasIndex("PurchaseId");
+
                     b.HasIndex("UserId");
 
                     b.ToTable("Reviews");
+                });
+
+            modelBuilder.Entity("book_store_app_marian.Models.ApplicationUser", b =>
+                {
+                    b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUser");
+
+                    b.HasDiscriminator().HasValue("ApplicationUser");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -440,15 +475,15 @@ namespace book_store_app_marian.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "IdentityUser")
-                        .WithMany()
+                    b.HasOne("book_store_app_marian.Models.ApplicationUser", "User")
+                        .WithMany("Purchases")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("IdentityUser");
-
                     b.Navigation("Products");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("book_store_app_marian.Models.Reviews", b =>
@@ -459,15 +494,23 @@ namespace book_store_app_marian.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "IdentityUser")
-                        .WithMany()
+                    b.HasOne("book_store_app_marian.Models.Purchases", "Purchases")
+                        .WithMany("Reviews")
+                        .HasForeignKey("PurchaseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("book_store_app_marian.Models.ApplicationUser", "User")
+                        .WithMany("Reviews")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("IdentityUser");
-
                     b.Navigation("Products");
+
+                    b.Navigation("Purchases");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("book_store_app_marian.Models.Categories", b =>
@@ -478,6 +521,18 @@ namespace book_store_app_marian.Data.Migrations
             modelBuilder.Entity("book_store_app_marian.Models.Products", b =>
                 {
                     b.Navigation("ProductImages");
+                });
+
+            modelBuilder.Entity("book_store_app_marian.Models.Purchases", b =>
+                {
+                    b.Navigation("Reviews");
+                });
+
+            modelBuilder.Entity("book_store_app_marian.Models.ApplicationUser", b =>
+                {
+                    b.Navigation("Purchases");
+
+                    b.Navigation("Reviews");
                 });
 #pragma warning restore 612, 618
         }

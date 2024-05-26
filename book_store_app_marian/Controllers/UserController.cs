@@ -13,22 +13,46 @@ namespace book_store_app_marian.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<IdentityUser> _userManager;
-        private Task<IdentityUser> GetCurrentUserAsync() => _userManager.GetUserAsync(User); // get logged user model
-        public UserController(ApplicationDbContext context, UserManager<IdentityUser> userManager) {
+
+        public UserController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
+        {
             _context = context;
             _userManager = userManager;
         }
 
         [HttpGet]
-        public async Task<IActionResult> PrchaseHistory()
+        public async Task<IActionResult> PurchaseHistory()
         {
-            var user = await GetCurrentUserAsync();
+            // get logged user model
+            var user = await _userManager.GetUserAsync(User);
 
-            var userPurchases = _context.Purchases
-                .Where(p => p.UserId == user.Id)
-                .ToListAsync();
+            // Fetch user purchases and include product details
+            List<Purchases> userPurchases = new List<Purchases>();
+            List<Reviews> userReviewPurchases = new List<Reviews>();
+            try
+            {
+                userPurchases = await _context.Purchases
+                    .Include(p => p.Products)
+                    .Include(p => p.Reviews)
+                    .Where(p => p.UserId == user.Id)
+                    .OrderByDescending(p => p.CreatedTimestamp)
+                    .ToListAsync();
 
-            ViewBag.Purchases = userPurchases;
+                userReviewPurchases = await _context.Reviews
+                    .Include(p => p.Products)
+                    .Include(p => p.Purchases)
+                    .Where(p => p.UserId == user.Id)
+                    .OrderByDescending(p => p.CreatedTimestamp)
+                    .ToListAsync();
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error fetching purchases: {ex.Message}");
+            }
+
+            ViewBag.UserPurchases = userPurchases ?? new List<Purchases>();
+            ViewBag.userReviewPurchases = userReviewPurchases ?? new List<Reviews>();
 
             var categories = await _context.Categories.ToListAsync();
 

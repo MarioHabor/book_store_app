@@ -1,0 +1,179 @@
+﻿@model book_store_app_marian.Models.ViewModel
+@using System.Linq
+
+@{
+    ViewData["Title"] = "Purchase Hystory";
+}
+
+@{
+    var userPurchases = ViewBag.UserPurchases;
+}
+<div class="card" style="width: 80%;">
+    <div class="card-header">
+        Purchase History
+    </div>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">Book Title</th>
+                <th scope="col">Book Category</th>
+                <th scope="col">Date Ordered</th>
+                <th scope="col">Status</th>
+                <th scope="col">View/Review/Download</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var purchase in userPurchases)
+            {
+                <tr>
+                    <th> <a class="link-no-decor" asp-controller="Product" asp-action="Index"
+                            asp-route-id="@purchase.Products.Id">@purchase.Products.ProductName</a></th>
+                    <th> <a class="link-no-decor" asp-controller="Category" asp-action="ProductCategory"
+                            asp-route-id="@purchase.Products.Categories.Id">@purchase.Products.Categories.CategoryName</a>
+                    </th>
+                    <td>@purchase.CreatedTimestamp.ToString("MMMM dd, yyyy")</td>
+                    <td>@purchase.Status</td>
+                    <td>
+                        <div class="row row-cols-auto">
+                            <div style="margin-left:18px">
+
+                                <a href data-bs-toggle="modal" data-bs-target="#AdvanceSearchModal">
+                                    <div class="modal-dialog" data-bs-toggle="modal" data-bs-target="#AdvanceSearchModal"><i
+                                            class="fas fa-search"></i></div>
+                                </a>
+                            </div>
+                            <div style="margin-left:12px">
+                                <a href data-bs-toggle="modal" data-bs-target="#ReviewProdModal-@purchase.Products.Id">
+                                    <div class="modal-dialog modal-x">
+                                        <i class="fas fa-pen"></i>
+                                    </div>
+                                </a>
+                            </div>
+                            <div style="margin-left:15px; margin-top: 28px">
+                                <a href="@Url.Action("DownloadBookInfo", "Product", new { id = purchase.Products.Id })">
+                                    <i class="fas fa-arrow-circle-down"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+
+<!-- Review Prod Modals -->
+@foreach (var purchase in userPurchases)
+{
+    <div class="modal fade" id="ReviewProdModal-@purchase.Products.Id" data-bs-keyboard="false" tabindex="-1"
+        aria-labelledby="ReviewProdModal-@purchase.Products.Id" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="ReviewProdModal-@purchase.Products.Id">Review:
+                        @purchase.Products.ProductName
+                    </h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                @{
+                    var reviews = purchase.Reviews as IEnumerable<book_store_app_marian.Models.Reviews>;
+                    var review = reviews?.FirstOrDefault(r => r.PurchaseId == purchase.Id);
+                }
+                @if (review != null)
+                {
+                    <form asp-action="EditReview" asp-controller="Product" method="post">
+                        <div class="modal-body">
+                            <input type="hidden" name="Id" value="@review.Id" />
+                            <input type="hidden" name="ProductId" value="@purchase.Products.Id" />
+                            <input type="hidden" name="PurchaseId" value="@purchase.Id" />
+                            <div class="form-group">
+                                <label for="bookTitle">Book Title</label>
+                                <p id="bookTitle">@purchase.Products.ProductName</p>
+                            </div>
+                            <div class="form-group">
+                                <label for="reviewText">You have reviewd this purchase</label>
+                                <textarea class="form-control" id="reviewText" name="Review" rows="3"
+                                    placeholder="Type your review here">@review.Review</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Star rating</label>
+                                <div class="star-rating">
+                                    @{
+                                        int rating = review.Rating;
+                                        for (int i = 1; i <= 5; i++)
+                                        {
+                                            <i class="fas fa-star @(i <= rating ? "text-warning" : "")" data-value="@i"></i>
+                                        }
+                                    }
+                                </div>
+                                <input type="hidden" id="rating" name="Rating" value="0" />
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </div>
+                    </form>
+                }
+                else
+                {
+                    <form asp-action="SubmitReview" asp-controller="Product" method="post">
+                        <div class="modal-body">
+                            <input type="hidden" name="ProductId" value="@purchase.Products.Id" />
+                            <input type="hidden" name="PurchaseId" value="@purchase.Id" />
+                            <div class="form-group">
+                                <label for="bookTitle">Book Title</label>
+                                <p id="bookTitle">@purchase.Products.ProductName</p>
+                            </div>
+                            <div class="form-group">
+                                <label for="reviewText">Write your review</label>
+                                <textarea class="form-control" id="reviewText" name="Review" rows="3"
+                                    placeholder="Type your review here"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Star rating</label>
+                                <div class="star-rating">
+                                    <i class="fas fa-star" data-value="1"></i>
+                                    <i class="fas fa-star" data-value="2"></i>
+                                    <i class="fas fa-star" data-value="3"></i>
+                                    <i class="fas fa-star" data-value="4"></i>
+                                    <i class="fas fa-star" data-value="5"></i>
+                                </div>
+                                <input type="hidden" id="rating" name="Rating" value="0" />
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </div>
+                    </form>
+                }
+
+            </div>
+        </div>
+    </div>
+}
+
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // Attach the star rating event listener for each modal using event delegation
+        $(document).on('click', '.fa-star', function () {
+            var rating = $(this).data('value');
+            var modal = $(this).closest('.modal');
+
+            modal.find('#rating').val(rating); // Set the hidden input value
+
+            modal.find('.fa-star').each(function () {
+                if ($(this).data('value') <= rating) {
+                    $(this).addClass('text-warning');
+                } else {
+                    $(this).removeClass('text-warning');
+                }
+            });
+        });
+    });
+</script>
