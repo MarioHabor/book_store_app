@@ -143,7 +143,83 @@ namespace book_store_app_marian.Controllers
             // If the model state is invalid, return the same view with the model to show validation errors
             return RedirectToAction("PurchaseHistory", "User");
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Search([FromQuery] string searchTerm, [FromQuery] string categoryName, [FromQuery] string orderBy, [FromQuery] double? minPrice, [FromQuery] double? maxPrice, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            ViewBag.SearchTerm = searchTerm;
+            ViewBag.CategoryName = categoryName;
+            ViewBag.OrderBy = orderBy;
+            ViewBag.MinPrice = minPrice;
+            ViewBag.MaxPrice = maxPrice;
+
+            Guid? categoryId = null;
+            if (!string.IsNullOrEmpty(categoryName))
+            {
+                var category = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryName == categoryName);
+                if (category != null)
+                {
+                    categoryId = category.Id;
+                }
+            }
+
+            var query = _context.Products.Include(p => p.Categories).Include(p => p.ProductImages).AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                query = query.Where(p => p.ProductName.Contains(searchTerm) || p.ProductAuthor.Contains(searchTerm) || p.Description.Contains(searchTerm));
+            }
+
+            if (categoryId.HasValue)
+            {
+                query = query.Where(p => p.CategoryId == categoryId.Value);
+            }
+
+            if (minPrice.HasValue)
+            {
+                query = query.Where(p => p.Price >= minPrice.Value);
+            }
+
+            if (maxPrice.HasValue)
+            {
+                query = query.Where(p => p.Price <= maxPrice.Value);
+            }
+
+            switch (orderBy)
+            {
+                case "PriceAsc":
+                    query = query.OrderBy(p => p.Price);
+                    break;
+                case "PriceDesc":
+                    query = query.OrderByDescending(p => p.Price);
+                    break;
+                case "NameAsc":
+                    query = query.OrderBy(p => p.ProductName);
+                    break;
+                case "NameDesc":
+                    query = query.OrderByDescending(p => p.ProductName);
+                    break;
+                case "AuthorAsc":
+                    query = query.OrderBy(p => p.ProductAuthor);
+                    break;
+                case "AuthorDesc":
+                    query = query.OrderByDescending(p => p.ProductAuthor);
+                    break;
+            }
+
+            var products = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
+            var totalProducts = await query.CountAsync();
+
+            var viewModel = new ViewModel
+            {
+                Products = products,
+                CurrentPage = page,
+                TotalPages = (int)Math.Ceiling(totalProducts / (double)pageSize),
+                Categories = await _context.Categories.ToListAsync()
+            };
+
+            return View(viewModel);
+        }
     }
-
-
 }
