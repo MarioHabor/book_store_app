@@ -153,12 +153,12 @@ namespace book_store_app_marian.Data
                     // Generate reviews for users who have purchased products
                     var reviewFaker = new Faker<Reviews>()
                         .RuleFor(p => p.Id, f => Guid.NewGuid())
-           .RuleFor(r => r.ProductId, f => f.PickRandom(purchasesList).ProductId)
-           .RuleFor(r => r.UserId, (f, r) => purchasesList.First(p => p.ProductId == r.ProductId).UserId)
-           .RuleFor(r => r.PurchaseId, (f, r) => purchasesList.First(p => p.ProductId == r.ProductId).Id)
-           .RuleFor(r => r.Review, f => f.Lorem.Sentence(10))
-           .RuleFor(r => r.CreatedTimestamp, f => f.Date.Past())
-           .RuleFor(r => r.Rating, f => f.Random.Byte(1, 5));
+                        .RuleFor(r => r.ProductId, f => f.PickRandom(purchasesList).ProductId)
+                        .RuleFor(r => r.UserId, (f, r) => purchasesList.First(p => p.ProductId == r.ProductId).UserId)
+                        .RuleFor(r => r.PurchaseId, (f, r) => purchasesList.First(p => p.ProductId == r.ProductId).Id)
+                        .RuleFor(r => r.Review, f => f.Lorem.Sentence(10))
+                        .RuleFor(r => r.CreatedTimestamp, f => f.Date.Past())
+                        .RuleFor(r => r.Rating, f => f.Random.Byte(1, 5));
 
                     var reviews = reviewFaker.Generate(200);
                     context.Reviews.AddRange(reviews);

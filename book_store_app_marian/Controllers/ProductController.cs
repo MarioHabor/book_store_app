@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Text;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace book_store_app_marian.Controllers
 {
@@ -13,10 +14,13 @@ namespace book_store_app_marian.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<IdentityUser> _userManager;
-        public ProductController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
+        private readonly ILogger<AdminPanelController> _logger;
+
+        public ProductController(ApplicationDbContext context, UserManager<IdentityUser> userManager, ILogger<AdminPanelController> logger)
         {
             _context = context;
             _userManager = userManager;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -91,10 +95,10 @@ namespace book_store_app_marian.Controllers
                 _context.Reviews.Add(model);
                 await _context.SaveChangesAsync();
 
-                return RedirectToAction("PurchaseHistory", "User", new { id = model.ProductId }); // Redirect to the product details page
+                return RedirectToAction("PurchaseHistory", "User"); // Redirect to the product details page
             } catch (Exception ex)
             {
-
+                _logger.LogError(ex.Message);
             }
 
             // If the model state is invalid, return the same view with the model to show validation errors
