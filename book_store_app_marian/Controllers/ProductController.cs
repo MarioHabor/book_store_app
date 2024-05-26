@@ -96,7 +96,46 @@ namespace book_store_app_marian.Controllers
                 await _context.SaveChangesAsync();
 
                 return RedirectToAction("PurchaseHistory", "User"); // Redirect to the product details page
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+            }
+
+            // If the model state is invalid, return the same view with the model to show validation errors
+            return RedirectToAction("PurchaseHistory", "User");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditReview([FromForm] Reviews model)
+        {
+            try
+            {
+                // get logged user model
+                var user = await _userManager.GetUserAsync(User);
+
+
+                var existingReview = await _context.Reviews
+                .FirstOrDefaultAsync(r => r.Id == model.Id && r.UserId == user.Id);
+
+                if (existingReview == null)
+                {
+                    return NotFound(); // Return not found if the review does not exist or does not belong to the current user
+                }
+
+                // Update the review properties
+                existingReview.Review = model.Review;
+                existingReview.Rating = model.Rating;
+                existingReview.CreatedTimestamp = DateTime.Now; // Update timestamp if needed
+
+                // Save the changes to the database
+                _context.Reviews.Update(existingReview);
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction("PurchaseHistory", "User"); // Redirect to the product details page
+            }
+            catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
             }
@@ -105,4 +144,6 @@ namespace book_store_app_marian.Controllers
             return RedirectToAction("PurchaseHistory", "User");
         }
     }
+
+
 }
