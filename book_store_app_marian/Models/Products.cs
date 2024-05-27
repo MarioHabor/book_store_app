@@ -30,6 +30,8 @@ namespace book_store_app_marian.Models
         public string Description { get; set; }
 
         public virtual ICollection<ProductImages> ProductImages { get; set; }
+
+        public virtual ICollection<Reviews> Reviews { get; set; }
         public DateTime CreatedTimestamp { get; set; }
 
 

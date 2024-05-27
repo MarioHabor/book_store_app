@@ -38,6 +38,17 @@ namespace book_store_app_marian.Controllers
             return View(ViewModel);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> RoleManagement()
+        {
+            var categories = await _context.Categories.ToListAsync();
+            ViewModel ViewModel = new ViewModel()
+            {
+                Categories = categories
+            };
+            return View(ViewModel);
+        }
+
         // Role Management
         [HttpPost]
         public async Task<IActionResult> CreateRole(string roleName)

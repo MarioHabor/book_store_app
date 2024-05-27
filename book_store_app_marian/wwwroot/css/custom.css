@@ -367,6 +367,12 @@
     height:40px;
 }
 
+.scrollable-reviews {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+}
+
 /* -------------------------------------------------------------- Box Product -------------------------------------------------------------- */
 .box-product-outer {
     display: flex;

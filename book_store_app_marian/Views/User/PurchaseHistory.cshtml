@@ -8,6 +8,11 @@
 @{
     var userPurchases = ViewBag.UserPurchases;
 }
+
+<div style="width: 80%;">
+    @await Html.PartialAsync("_ErrorMessages")
+</div>
+
 <div class="card" style="width: 80%;">
     <div class="card-header">
         Purchase History

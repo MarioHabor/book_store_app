@@ -54,6 +54,9 @@ namespace book_store_app_marian.Controllers
             ViewBag.UserPurchases = userPurchases ?? new List<Purchases>();
             ViewBag.userReviewPurchases = userReviewPurchases ?? new List<Reviews>();
 
+            ViewBag.SuccessMessage = TempData["SuccessMessage"]?.ToString();
+            ViewBag.ErrorMessage = TempData["ErrorMessage"]?.ToString();
+
             var categories = await _context.Categories.ToListAsync();
 
             var viewModel = new ViewModel
