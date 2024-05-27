@@ -343,7 +343,7 @@ namespace book_store_app_marian.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Purchases");
+                    b.ToTable("Purchases", (string)null);
                 });
 
             modelBuilder.Entity("book_store_app_marian.Models.Reviews", b =>
@@ -381,7 +381,7 @@ namespace book_store_app_marian.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Reviews");
+                    b.ToTable("Reviews", (string)null);
                 });
 
             modelBuilder.Entity("book_store_app_marian.Models.ApplicationUser", b =>

@@ -54,8 +54,8 @@
                             </ul>
                         </li>
                     </ul>
-                    <form class="d-flex" role="search">
-                        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                    <form asp-controller="Product" asp-action="Search" method="get" class="d-flex" role="search">
+                        <input class="form-control me-2" type="search" placeholder="Search" name="searchTerm" aria-label="Search" value="@ViewBag.SearchTerm">
                         <button class="btn btn-outline-success" type="submit">Go</button>
                     </form>
                 </div>
@@ -69,111 +69,92 @@
                         </span>
                     </a>
                 </span>
-
             </div>
-            <div class="p-2 bd-highlight" style="padding-right: 30px !important">
-                <a href data-bs-toggle="modal" data-bs-target="#AdvanceSearchModal">
-                    <div class="modal-dialog" data-bs-toggle="modal" data-bs-target="#AdvanceSearchModal">Advanced
-                        search</div>
-                </a>
+            @if (ViewContext.RouteData.Values["page"]?.ToString().Equals("/Identity/Account/Login",
+            StringComparison.OrdinalIgnoreCase) ?? true)
+            {
+                <div class="p-2 bd-highlight" style="padding-right: 30px !important">
+                    <a href data-bs-toggle="modal" data-bs-target="#AdvanceSearchModal">
+                        <div class="modal-dialog" data-bs-toggle="modal" data-bs-target="#AdvanceSearchModal">Advanced
+                            search</div>
+                    </a>
 
-                <!-- Modal -->
-                @* <div class="modal fade" id="AdvanceSearchModal" tabindex="-1" aria-labelledby="exampleModalLabel"
-                aria-hidden="true">
-                <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                <div class="modal-header">
-                <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                ...
-                </div>
-                <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary">Save changes</button>
-                </div>
-                </div>
-                </div>
-                </div> *@
-
-                <div class="modal fade" id="AdvanceSearchModal" tabindex="-1" aria-labelledby="searchModalLabel"
-                    aria-hidden="true">
-                    <div class="modal-dialog modal-xl">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="searchModalLabel">Advanced Search</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <!-- Search Form -->
-                                <form asp-controller="Product" asp-action="Search" method="get">
-                                    <div class="form-group mb-3">
-                                        <label for="searchTerm">Enter reference id or book title</label>
-                                        <input type="text" name="searchTerm" class="form-control" id="searchTerm"
-                                            value="@ViewBag.SearchTerm">
-                                    </div>
-                                    <div class="row mb-3">
-                                        <div class="col-md-4">
-                                            <label for="categoryName">By category</label>
-                                            <select name="categoryName" class="form-control" id="categoryName">
-                                                <option value="">Drop down menu</option>
-                                                @foreach (var category in Model.Categories)
-                                                {
-                                                    <option value="@category.CategoryName">
-                                                        @category.CategoryName</option>
-                                                }
-                                            </select>
+                    <div class="modal fade" id="AdvanceSearchModal" tabindex="-1" aria-labelledby="searchModalLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog modal-xl">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="searchModalLabel">Advanced Search</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <!-- Search Form -->
+                                    <form asp-controller="Product" asp-action="Search" method="get">
+                                        <div class="form-group mb-3">
+                                            <label for="searchTerm">Enter reference id or book title</label>
+                                            <input type="text" name="searchTerm" class="form-control" id="searchTerm"
+                                                value="@ViewBag.SearchTerm">
                                         </div>
-                                        <div class="col-md-4">
-                                            <label for="orderBy">Order by</label>
-                                            <select name="orderBy" class="form-control" id="orderBy">
-                                                <option value="">Drop down menu</option>
-                                                <option value="PriceAsc">Price (Low to High)</option>
-                                                <option value="PriceDesc">Price (High to Low)</option>
-                                                <option value="NameAsc">Name (A to Z)</option>
-                                                <option value="NameDesc">Name (Z to A)</option>
-                                                <option value="AuthorAsc">Author (A to Z)</option>
-                                                <option value="AuthorDesc">Author (Z to A)</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="row">
-                                                <div class="col-4">
-                                                    <label for="minPrice">Min Price</label>
-                                                    <div class="p-3"><input type="number" name="minPrice" class="form-control" id="minPrice"
-                                                    value="@ViewBag.MinPrice" step="0.01" min="0.01" placeholder="Min"></div>
-                                                </div>
-                                                <div class="col-4">
-                                                    <label for="minPrice">Max Price</label>
-                                                    <div class="p-3"> <input type="number" name="maxPrice" class="form-control" id="maxPrice"
-                                                    value="@ViewBag.MaxPrice" step="0.01" min="0.01" placeholder="Max"></div>
+                                        <div class="row mb-3">
+                                            <div class="col-md-4">
+                                                <label for="categoryName">By category</label>
+                                                <select name="categoryName" class="form-control" id="categoryName">
+                                                    <option value="">Drop down menu</option>
+                                                    @foreach (var category in Model.Categories)
+                                                    {
+                                                        <option value="@category.CategoryName">
+                                                            @category.CategoryName</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label for="orderBy">Order by</label>
+                                                <select name="orderBy" class="form-control" id="orderBy">
+                                                    <option value="">Drop down menu</option>
+                                                    <option value="PriceAsc">Price (Low to High)</option>
+                                                    <option value="PriceDesc">Price (High to Low)</option>
+                                                    <option value="NameAsc">Name (A to Z)</option>
+                                                    <option value="NameDesc">Name (Z to A)</option>
+                                                    <option value="AuthorAsc">Author (A to Z)</option>
+                                                    <option value="AuthorDesc">Author (Z to A)</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="row">
+                                                    <div class="col-4">
+                                                        <label for="minPrice">Min Price</label>
+                                                        <div class="p-3"><input type="number" name="minPrice" class="form-control" id="minPrice"
+                                                        value="@ViewBag.MinPrice" step="0.01" min="0.01" placeholder="Min"></div>
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <label for="minPrice">Max Price</label>
+                                                        <div class="p-3"> <input type="number" name="maxPrice" class="form-control" id="maxPrice"
+                                                        value="@ViewBag.MaxPrice" step="0.01" min="0.01" placeholder="Max"></div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                            @* <label for="maxPrice">Price</label>
-                                            <div class="col-md-2 mb-3">
-                                                <input type="number" name="minPrice" class="form-control" id="minPrice"
-                                                    value="@ViewBag.MinPrice" step="0.01" placeholder="Enter min price">
-                                                <input type="number" name="maxPrice" class="form-control" id="maxPrice"
-                                                    value="@ViewBag.MaxPrice" step="0.01" placeholder="Enter max price">
-                                            </div> *@
-                                        </div>
-                                        
-                                        <div class="modal-footer">
-                                            <button type="submit" class="btn btn-primary">Search</button>
-                                            <button type="button" class="btn btn-secondary"
-                                                data-bs-dismiss="modal">Close</button>
-                                        </div>
-                                </form>
+                                                @* <label for="maxPrice">Price</label>
+                                                <div class="col-md-2 mb-3">
+                                                    <input type="number" name="minPrice" class="form-control" id="minPrice"
+                                                        value="@ViewBag.MinPrice" step="0.01" placeholder="Enter min price">
+                                                    <input type="number" name="maxPrice" class="form-control" id="maxPrice"
+                                                        value="@ViewBag.MaxPrice" step="0.01" placeholder="Enter max price">
+                                                </div> *@
+                                            </div>
+                                            
+                                            <div class="modal-footer">
+                                                <button type="submit" class="btn btn-primary">Search</button>
+                                                <button type="button" class="btn btn-secondary"
+                                                    data-bs-dismiss="modal">Close</button>
+                                            </div>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>
-
-
                 </div>
-            </div>
+            }
     </header>
     <div class="container-xx mt-5">
         <main role="main" class="flex-fill">
@@ -182,9 +163,7 @@
                     @if (ViewContext.RouteData.Values["page"]?.ToString().Equals("/Identity/Account/Login",
                     StringComparison.OrdinalIgnoreCase) ?? true)
                     {
-                        @* <partial name="_Categories" /> *@
                         @await Html.PartialAsync("_Categories")
-
                     }
                     <div class="col-md-10">
                         <div class="mb-4">

@@ -29,6 +29,7 @@ namespace book_store_app_marian.Controllers
             var product = await _context.Products
                                        .Include(p => p.ProductImages)
                                        .Include(p => p.Categories)
+                                       .Include(p => p.Reviews)
                                        .FirstOrDefaultAsync(p => p.Id == id);
 
             if (product == null)
@@ -47,6 +48,9 @@ namespace book_store_app_marian.Controllers
                 Products = new List<Products> { product },
                 SelectedCategoryName = product.Categories?.CategoryName
             };
+
+            ViewBag.ErrorMessage = TempData["ErrorMessage"]?.ToString();
+
             // related products view bag
             ViewBag.RelatedProducts = _context.Products
                 .Include(p => p.ProductImages)
@@ -95,6 +99,7 @@ namespace book_store_app_marian.Controllers
                 _context.Reviews.Add(model);
                 await _context.SaveChangesAsync();
 
+                TempData["SuccessMessage"] = "Review submitted successfully!";
                 return RedirectToAction("PurchaseHistory", "User"); // Redirect to the product details page
             }
             catch (Exception ex)
@@ -102,7 +107,8 @@ namespace book_store_app_marian.Controllers
                 _logger.LogError(ex.Message);
             }
 
-            // If the model state is invalid, return the same view with the model to show validation errors
+            // If the model state is invalid
+            TempData["ErrorMessage"] = "Something went wrong.";
             return RedirectToAction("PurchaseHistory", "User");
         }
 
@@ -133,6 +139,7 @@ namespace book_store_app_marian.Controllers
                 _context.Reviews.Update(existingReview);
                 await _context.SaveChangesAsync();
 
+                TempData["SuccessMessage"] = "Review submitted successfully!";
                 return RedirectToAction("PurchaseHistory", "User"); // Redirect to the product details page
             }
             catch (Exception ex)
@@ -140,7 +147,8 @@ namespace book_store_app_marian.Controllers
                 _logger.LogError(ex.Message);
             }
 
-            // If the model state is invalid, return the same view with the model to show validation errors
+            // If the model state is invalid
+            TempData["ErrorMessage"] = "Something went wrong.";
             return RedirectToAction("PurchaseHistory", "User");
         }
 
@@ -220,6 +228,41 @@ namespace book_store_app_marian.Controllers
             };
 
             return View(viewModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Purchase([FromForm] Products model)
+        {
+            try
+            {
+                // get logged user model
+                var user = await _userManager.GetUserAsync(User);
+                // var product = await _context.Products.FindAsync(productId);
+                var Purchase = new Purchases()
+                {
+                    Id = Guid.NewGuid(),
+                    ProductId = model.Id,
+                    UserId = user.Id,
+                    Price = model.Price,
+                    Status = "Pending",
+                    CreatedTimestamp = DateTime.UtcNow
+
+                };
+
+                _context.Purchases.Add(Purchase);
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Purchase submitted successfully!";
+                return RedirectToAction("PurchaseHistory", "User");
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+            }
+            
+            TempData["ErrorMessage"] = "Something went wrong.";
+            return RedirectToAction("Index", "Product", new { id = model.Id.ToString() }); // Redirect to the product details page
         }
     }
 }
