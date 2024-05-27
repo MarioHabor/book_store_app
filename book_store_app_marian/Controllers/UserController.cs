@@ -55,6 +55,7 @@ namespace book_store_app_marian.Controllers
             ViewBag.userReviewPurchases = userReviewPurchases ?? new List<Reviews>();
 
             ViewBag.SuccessMessage = TempData["SuccessMessage"]?.ToString();
+            ViewBag.ErrorMessage = TempData["ErrorMessage"]?.ToString();
 
             var categories = await _context.Categories.ToListAsync();
 

@@ -3,58 +3,55 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="col-md-11">
-    <div class="mb-4">
-        <div class="card">
-            <div class="card-header">
-                Made for you
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    @foreach (var product in Model.Products)
-                    {
-                        <div class="col-md-4 mb-4 mb-4 box-product-outer">
-                            <div class="box-product">
-                                <div class="img-wrapper">
-                                    <a asp-controller="Product" asp-action="Index" asp-route-id="@product.Id">
-                                        @if (product.ProductImages != null && product.ProductImages.Any())
-                                        {
-                                            <img alt="@product.ProductName"
-                                                src="@product.ProductImages.FirstOrDefault(pi => pi.MainImage)?.ProductImage"
-                                                class="img-fluid">
-                                        }
-                                        else
-                                        {
-                                            <img alt="@product.ProductName"
-                                                src="https://bootdey.com/img/Content/avatar/avatar6.png" class="img-fluid">
-                                        }
-
-                                    </a>
-                                    <div class="option">
-                                        <a asp-controller="Product" asp-action="Index" asp-route-id="@product.Id" data-bs-toggle="tooltip" data-bs-placement="bottom" title=""><i
-                                                class=""></i></a>
-                                        <a asp-controller="Product" asp-action="Index" asp-route-id="@product.Id" data-bs-toggle="tooltip" data-bs-placement="bottom" title="View"><i
-                                                class="fa fa-eye"></i></a>
-                                        <a asp-controller="Product" asp-action="Index" asp-route-id="@product.Id" data-bs-toggle="tooltip" data-bs-placement="bottom" title=""><i
-                                                class=""></i></a>
-                                    </div>
-                                </div>
-                                <h6><a asp-controller="Product" asp-action="Index"
-                                        asp-route-id="@product.Id">@product.ProductName</a></h6>
-                                <div class="row justify-content-between">
-                                    <div class="col-4">
-                                        <div class="price">
-                                            <div>@product.Price.ToString("C")</div>
+@if (ViewBag.RecommendedProducts != null && ViewBag.RecommendedProducts.Count > 0)
+{
+    <div class="col-md-11">
+        <div class="mb-4">
+            <div class="card">
+                <div class="card-header">
+                    Made for you personal recommendations
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        @foreach (var recommendedProduct in ViewBag.RecommendedProducts)
+                        {
+                            <div class="col-md-4 mb-4 mb-4 box-product-outer">
+                                <div class="box-product">
+                                    <div class="img-wrapper">
+                                        <a asp-controller="Product" asp-action="Index" asp-route-id="@recommendedProduct.Id">
+                                            <img alt="@recommendedProduct.ProductName"
+                                                 src="@recommendedProduct.MainImageUrl"
+                                                 class="img-fluid">
+                                        </a>
+                                        <div class="option">
+                                            <a asp-controller="Product" asp-action="Index" asp-route-id="@recommendedProduct.Id"
+                                                data-bs-toggle="tooltip" data-bs-placement="bottom" title=""><i
+                                                    class=""></i></a>
+                                            <a asp-controller="Product" asp-action="Index" asp-route-id="@recommendedProduct.Id"
+                                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="View"><i
+                                                    class="fa fa-eye"></i></a>
+                                            <a asp-controller="Product" asp-action="Index" asp-route-id="@recommendedProduct.Id"
+                                                data-bs-toggle="tooltip" data-bs-placement="bottom" title=""><i
+                                                    class=""></i></a>
                                         </div>
                                     </div>
-                                    <div class="col-4">
-                                        <a asp-controller="Product" asp-action="Index" asp-route-id="@product.Id"
-                                            class="btn btn-primary">View</a>
+                                    <h6><a asp-controller="Product" asp-action="Index"
+                                            asp-route-id="@recommendedProduct.Id">@recommendedProduct.ProductName</a></h6>
+                                    <div class="row justify-content-between">
+                                        <div class="col-4">
+                                            <div class="price">
+                                                <div>@recommendedProduct.CategoryName</div>
+                                                <div>@recommendedProduct.Price.ToString("C")</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <a asp-controller="Product" asp-action="Index" asp-route-id="@recommendedProduct.Id"
+                                                class="btn btn-primary">View</a>
+                                        </div>
                                     </div>
-                                </div>
 
 
-                                @* <div class="rating">
+                                    @* <div class="rating">
                             <i class="fa fa-star"></i>
                             <i class="fa fa-star"></i>
                             <i class="fa fa-star"></i>
@@ -62,20 +59,21 @@
                             <i class="fa fa-star-half-o"></i>
                             <a href="#">(3 reviews)</a>
                             </div> *@
+                                </div>
                             </div>
-                        </div>
-                    }
+                        }
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+}
 
 <div class="col-md-11 mt-5">
     <div class="mb-4">
         <div class="card">
             <div class="card-header">
-                Made for you
+                Our Catalog
             </div>
             <div class="card-body">
                 <div class="row">
@@ -112,6 +110,7 @@
                                 <div class="row justify-content-between">
                                     <div class="col-4">
                                         <div class="price">
+                                            <div>@product.Categories.CategoryName</div>
                                             <div>@product.Price.ToString("C")</div>
                                         </div>
                                     </div>

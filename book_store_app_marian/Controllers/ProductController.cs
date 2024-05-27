@@ -29,7 +29,7 @@ namespace book_store_app_marian.Controllers
             var product = await _context.Products
                                        .Include(p => p.ProductImages)
                                        .Include(p => p.Categories)
-                                       .Include(p => p.Reviews)
+                                       .Include(p => p.Reviews.OrderByDescending(r => r.CreatedTimestamp))
                                        .FirstOrDefaultAsync(p => p.Id == id);
 
             if (product == null)
@@ -38,7 +38,7 @@ namespace book_store_app_marian.Controllers
             }
 
             var categories = await _context.Categories.ToListAsync();
-            var users = await _context.Users.ToListAsync(); // Assuming Users is from Identity
+            var users = await _context.Users.ToListAsync();
 
             var viewModel = new ViewModel
             {

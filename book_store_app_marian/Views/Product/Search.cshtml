@@ -19,27 +19,34 @@
                                     <a asp-controller="Product" asp-action="Index" asp-route-id="@product.Id">
                                         @if (product.ProductImages != null && product.ProductImages.Any())
                                         {
-                                           <img alt="@product.ProductName" src="@product.ProductImages.FirstOrDefault(pi => pi.MainImage)?.ProductImage"
-                                                                                class="img-fluid">
+                                            <img alt="@product.ProductName"
+                                                src="@product.ProductImages.FirstOrDefault(pi => pi.MainImage)?.ProductImage"
+                                                class="img-fluid">
                                         }
                                         else
                                         {
-                                            <img alt="@product.ProductName" src="https://bootdey.com/img/Content/avatar/avatar6.png" class="img-fluid">
+                                            <img alt="@product.ProductName" src="https://bootdey.com/img/Content/avatar/avatar6.png"
+                                                class="img-fluid">
                                         }
                                     </a>
                                     <div class="option">
-                                        <a asp-controller="Product" asp-action="Index" asp-route-id="@product.Id" data-bs-toggle="tooltip" data-bs-placement="bottom" title="View"><i class="fa fa-eye"></i></a>
+                                        <a asp-controller="Product" asp-action="Index" asp-route-id="@product.Id"
+                                            data-bs-toggle="tooltip" data-bs-placement="bottom" title="View"><i
+                                                class="fa fa-eye"></i></a>
                                     </div>
                                 </div>
-                                <h6><a asp-controller="Product" asp-action="Index" asp-route-id="@product.Id">@product.ProductName</a></h6>
+                                <h6><a asp-controller="Product" asp-action="Index"
+                                        asp-route-id="@product.Id">@product.ProductName</a></h6>
                                 <div class="row justify-content-between">
                                     <div class="col-4">
                                         <div class="price">
+                                            <div>@product.Categories.CategoryName</div>
                                             <div>@product.Price.ToString("C")</div>
                                         </div>
                                     </div>
                                     <div class="col-4">
-                                        <a asp-controller="Product" asp-action="Index" asp-route-id="@product.Id" class="btn btn-primary">View</a>
+                                        <a asp-controller="Product" asp-action="Index" asp-route-id="@product.Id"
+                                            class="btn btn-primary">View</a>
                                     </div>
                                 </div>
                             </div>
@@ -60,11 +67,9 @@
                     {
                         <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
                             <a class="page-link" asp-controller="Product" asp-action="Search"
-                               asp-route-searchTerm="@ViewBag.SearchTerm"
-                               asp-route-categoryName="@ViewBag.CategoryName"
-                               asp-route-minPrice="@ViewBag.MinPrice"
-                               asp-route-maxPrice="@ViewBag.MaxPrice"
-                               asp-route-page="@i">@i</a>
+                                asp-route-searchTerm="@ViewBag.SearchTerm" asp-route-categoryName="@ViewBag.CategoryName"
+                                asp-route-minPrice="@ViewBag.MinPrice" asp-route-maxPrice="@ViewBag.MaxPrice"
+                                asp-route-page="@i">@i</a>
                         </li>
                     }
                 </ul>

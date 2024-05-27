@@ -118,7 +118,7 @@ namespace book_store_app_marian.Data
                         .RuleFor(u => u.Email, f => f.Internet.Email())
                         .RuleFor(u => u.NormalizedEmail, (f, u) => u.Email.ToUpper())
                         .RuleFor(u => u.EmailConfirmed, f => true)
-                        .RuleFor(u => u.PasswordHash, (f, u) => passwordHasher.HashPassword(u, "User123@"))
+                        .RuleFor(u => u.PasswordHash, (f, u) => passwordHasher.HashPassword(u, "User@1234"))
                         .RuleFor(u => u.SecurityStamp, f => Guid.NewGuid().ToString("D"));
 
                     var userList = users.Generate(20);

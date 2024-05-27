@@ -8,13 +8,10 @@
 @{
     var userPurchases = ViewBag.UserPurchases;
 }
-@if (ViewBag.SuccessMessage != null)
-{
-    <div class="alert alert-success" style="width: 80%;" role="alert">
-        @ViewBag.SuccessMessage
-    </div>
-}
 
+<div style="width: 80%;">
+    @await Html.PartialAsync("_ErrorMessages")
+</div>
 
 <div class="card" style="width: 80%;">
     <div class="card-header">
