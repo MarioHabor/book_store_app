@@ -18,13 +18,15 @@ namespace book_store_app_marian.Controllers
         private readonly UserManager<IdentityUser> _userManager;
         private readonly ApplicationDbContext _context;
         private readonly ILogger<AdminPanelController> _logger;
+        private readonly IWebHostEnvironment _hostEnvironment;
 
-        public AdminPanelController(RoleManager<IdentityRole> roleManager, UserManager<IdentityUser> userManager, ApplicationDbContext context, ILogger<AdminPanelController> logger)
+        public AdminPanelController(RoleManager<IdentityRole> roleManager, UserManager<IdentityUser> userManager, ApplicationDbContext context, ILogger<AdminPanelController> logger, IWebHostEnvironment hostEnvironment)
         {
             _roleManager = roleManager;
             _userManager = userManager;
             _context = context;
             _logger = logger;
+            _hostEnvironment = hostEnvironment;
         }
 
         // GET: AdminPanelController
@@ -366,6 +368,129 @@ namespace book_store_app_marian.Controllers
             {
                 return View();
             }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ProductList()
+        {
+            var categories = await _context.Categories.ToListAsync();
+            var products = await _context.Products
+            .Include(p => p.ProductImages)
+            .OrderByDescending(r => r.CreatedTimestamp)
+            .ToListAsync();
+
+            ViewModel ViewModel = new ViewModel()
+            {
+                Categories = categories,
+                Products = products
+            };
+            return View(ViewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ProductCreate([FromForm] string ProductName, string ProductAuthor, Guid CategoryId, double Price, string Description, int MainImageIndex, List<IFormFile> Images)
+        {
+           if (Images == null || Images.Count == 0)
+            {
+                ModelState.AddModelError("", "Please upload at least one image.");
+                return View();
+            }
+
+            // Create new product
+            var product = new Products
+            {
+                Id = Guid.NewGuid(),
+                ProductName = ProductName,
+                ProductAuthor = ProductAuthor,
+                CategoryId = CategoryId,
+                Price = Price,
+                Description = Description,
+                CreatedTimestamp = DateTime.Now,
+                ProductImages = new List<ProductImages>()
+            };
+
+            // Save images to wwwroot/images
+            for (int i = 0; i < Images.Count; i++)
+            {
+                var imageFile = Images[i];
+                if (imageFile.Length > 0)
+                {
+                    var fileName = Path.GetFileNameWithoutExtension(imageFile.FileName);
+                    var extension = Path.GetExtension(imageFile.FileName);
+                    var uniqueFileName = $"{fileName}_{Guid.NewGuid()}{extension}";
+                    var filePath = Path.Combine(_hostEnvironment.WebRootPath, "images", uniqueFileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await imageFile.CopyToAsync(stream);
+                    }
+
+                    var image = new ProductImages
+                    {
+                        Id = Guid.NewGuid(),
+                        ProductId = product.Id,
+                        ProductImage = "/images/" + uniqueFileName,
+                        MainImage = i == MainImageIndex,
+                        CreatedTimestamp = DateTime.Now
+                    };
+                    product.ProductImages.Add(image);
+                }
+            }
+
+            // Save to database
+            _context.Products.Add(product);
+            await _context.SaveChangesAsync();
+
+            // Redirect or return view as necessary
+            return RedirectToAction("ProductList", "AdminPanel");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ProductEdit(Guid id, [Bind("Id,CategoryId,ProductAuthor,ProductName,Price,Description,CreatedTimestamp")] Products product)
+        {
+            if (id != product.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(product);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!ProductExists(product.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction("ProductList", "AdminPanel");
+            }
+            return RedirectToAction("ProductList", "AdminPanel");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ProductDelete(Guid id)
+        {
+            var product = await _context.Products.FindAsync(id);
+            _context.Products.Remove(product);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("ProductList", "AdminPanel");
+        }
+
+        private bool ProductExists(Guid id)
+        {
+            return _context.Products.Any(e => e.Id == id);
         }
     }
 }

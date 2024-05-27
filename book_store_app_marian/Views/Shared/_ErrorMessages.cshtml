@@ -10,3 +10,21 @@
         @ViewBag.ErrorMessage
     </div>
 }
+@if (ViewBag.ToastSuccessMessage != null)
+{
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+
+        <div class="toast show">
+            <div class="toast-header">
+                <div class="rounded me-2" alt="..."><span class="badge bg-primary rounded me-2"></span></div>
+                <strong class="me-auto">Notification</strong>
+                <small>Now</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                @ViewBag.ToastSuccessMessage
+            </div>
+
+        </div>
+    </div>
+}

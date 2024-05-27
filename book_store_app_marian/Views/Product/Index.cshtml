@@ -6,7 +6,6 @@
 @{
     ViewData["Title"] = "Book - " + @Model.Products.First().ProductName;
 }
-
 @await Html.PartialAsync("_ErrorMessages")
 <div class="product-content product-wrap clearfix product-deatil">
     <div class="row mb-5">
@@ -153,7 +152,8 @@
                                 @foreach (var review in @Model.Products.First().Reviews)
                                 {
                                     int randomNumber = random.Next(1, 8);
-                                    var avatarImage = "https://bootdey.com/img/Content/avatar/avatar" + @randomNumber + ".png";
+                                    var avatarImage = "https://bootdey.com/img/Content/avatar/avatar" + @randomNumber +
+                                    ".png";
                                     reviewPosistion++;
 
                                     <li class="message">
@@ -178,7 +178,8 @@
                                         </span>
                                         <ul class="list-inline font-xs">
                                             <li class="pull-right">
-                                                <small class="text-muted pull-right ultra-light"> @review.CreatedTimestamp.ToString("MMMM dd, yyyy") </small>
+                                                <small class="text-muted pull-right ultra-light">
+                                                    @review.CreatedTimestamp.ToString("MMMM dd, yyyy") </small>
                                             </li>
                                         </ul>
                                     </li>
