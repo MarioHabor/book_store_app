@@ -15,7 +15,9 @@
             <th>
                 Email
             </th>
-            <th></th>
+            <th>
+                User Id
+            </th>
         </tr>
     </thead>
     <tbody>
@@ -29,7 +31,7 @@
                     @user.Email
                 </td>
                 <td>
-                    <a class="btn btn-primary" asp-action="Edit" asp-route-id="@user.Id">Edit</a>
+                    @user.Id
                 </td>
             </tr>
         }

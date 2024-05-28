@@ -13,14 +13,10 @@
 
 <hr />
 <div>
-    <form asp-action="DeleteCategoryConfirmed" method="post">
-        <input type="hidden" asp-for="categoriesModel.Id" />
-
-        <div class="form-group">
-            <label asp-for="categoriesModel.CategoryName"></label>
-            <input asp-for="categoriesModel.CategoryName" class="form-control" disabled />
-        </div>
-        <input type="submit" value="Delete" class="btn btn-danger" />
-        @* <button type="submit" class="btn btn-danger">Delete Category</button> *@
-    </form>
+ <form asp-action="DeleteCategoryConfirmed" asp-controller="AdminPanel" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="Id" value="@Model.categoriesModel.Id" />
+            <button type="submit" class="btn btn-danger">Delete</button> |
+            <a asp-action="CategoryList" class="btn btn-secondary">Back to List</a>
+        </form>
 </div>

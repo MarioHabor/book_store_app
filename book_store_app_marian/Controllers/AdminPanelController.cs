@@ -18,13 +18,15 @@ namespace book_store_app_marian.Controllers
         private readonly UserManager<IdentityUser> _userManager;
         private readonly ApplicationDbContext _context;
         private readonly ILogger<AdminPanelController> _logger;
+        private readonly IWebHostEnvironment _hostEnvironment;
 
-        public AdminPanelController(RoleManager<IdentityRole> roleManager, UserManager<IdentityUser> userManager, ApplicationDbContext context, ILogger<AdminPanelController> logger)
+        public AdminPanelController(RoleManager<IdentityRole> roleManager, UserManager<IdentityUser> userManager, ApplicationDbContext context, ILogger<AdminPanelController> logger, IWebHostEnvironment hostEnvironment)
         {
             _roleManager = roleManager;
             _userManager = userManager;
             _context = context;
             _logger = logger;
+            _hostEnvironment = hostEnvironment;
         }
 
         // GET: AdminPanelController
@@ -190,45 +192,17 @@ namespace book_store_app_marian.Controllers
                 return NotFound();
             }
 
-            ModelState.Remove("Users");
-            ModelState.Remove("Categories");
-
-            if (ModelState.IsValid)
+            try
             {
-                try
-                {
-                    _context.Update(categoryModel.categoriesModel);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!CategoryExists(categoryModel.categoriesModel.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(CategoryList));
+                _context.Update(categoryModel.categoriesModel);
+                await _context.SaveChangesAsync();
             }
-
-            var categories = await _context.Categories.ToListAsync();
-
-            ViewModel ViewModel = new ViewModel()
+            catch (DbUpdateConcurrencyException)
             {
-                Categories = categories,
-                categoriesModel = categoryModel.categoriesModel
-            };
-
-            return View(ViewModel);
+                throw;
+            }
+            return RedirectToAction("EditCategory", "AdminPanel", new { id = id.ToString() });
             
-        }
-
-        private bool CategoryExists(Guid id)
-        {
-            return _context.Categories.Any(e => e.Id == id);
         }
 
         // GET: AdminPanel/DeleteCategory/5
@@ -258,114 +232,222 @@ namespace book_store_app_marian.Controllers
         }
 
         // POST: AdminPanel/DeleteCategory/5
-        [HttpPost]
+        [HttpPost, ActionName("DeleteCategoryConfirmed")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteCategoryConfirmed(ViewModel categoryModel)
+        public async Task<IActionResult> DeleteCategoryConfirmed(Guid id)
         {
-
-            ModelState.Remove("Users");
-            ModelState.Remove("Categories");
-            ModelState.Remove("categoriesModel.CategoryName");
-
-            if (ModelState.IsValid)
+            var category = await _context.Categories.FindAsync(id);
+            if (category == null)
             {
-                try
-                {
-                    _context.Remove(categoryModel.categoriesModel);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!CategoryExists(categoryModel.categoriesModel.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(CategoryList));
+                return NotFound();
             }
 
+            try
+            {
+                _context.Categories.Remove(category);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(CategoryList));
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                throw;
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ProductList()
+        {
             var categories = await _context.Categories.ToListAsync();
+            var products = await _context.Products
+            .Include(p => p.ProductImages)
+            .OrderByDescending(r => r.CreatedTimestamp)
+            .ToListAsync();
 
             ViewModel ViewModel = new ViewModel()
             {
                 Categories = categories,
-                categoriesModel = categoryModel.categoriesModel
+                Products = products
             };
-
             return View(ViewModel);
         }
 
-        // GET: AdminPanelController/Details/5
-        public ActionResult Details(int id)
-        {
-            return View();
-        }
-
-        // GET: AdminPanelController/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: AdminPanelController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public async Task<IActionResult> ProductCreate([FromForm] string ProductName, string ProductAuthor, Guid CategoryId, double Price, string Description, int MainImageIndex, List<IFormFile> Images)
         {
-            try
+           if (Images == null || Images.Count == 0)
             {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
+                ModelState.AddModelError("", "Please upload at least one image.");
                 return View();
             }
+
+            // Create new product
+            var product = new Products
+            {
+                Id = Guid.NewGuid(),
+                ProductName = ProductName,
+                ProductAuthor = ProductAuthor,
+                CategoryId = CategoryId,
+                Price = Price,
+                Description = Description,
+                CreatedTimestamp = DateTime.Now,
+                ProductImages = new List<ProductImages>()
+            };
+
+            // Save images to wwwroot/images
+            for (int i = 0; i < Images.Count; i++)
+            {
+                var imageFile = Images[i];
+                if (imageFile.Length > 0)
+                {
+                    var fileName = Path.GetFileNameWithoutExtension(imageFile.FileName);
+                    var extension = Path.GetExtension(imageFile.FileName);
+                    var uniqueFileName = $"{fileName}_{Guid.NewGuid()}{extension}";
+                    var filePath = Path.Combine(_hostEnvironment.WebRootPath, "images", uniqueFileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await imageFile.CopyToAsync(stream);
+                    }
+
+                    var image = new ProductImages
+                    {
+                        Id = Guid.NewGuid(),
+                        ProductId = product.Id,
+                        ProductImage = "/images/" + uniqueFileName,
+                        MainImage = i == MainImageIndex,
+                        CreatedTimestamp = DateTime.Now
+                    };
+                    product.ProductImages.Add(image);
+                }
+            }
+
+            // Save to database
+            _context.Products.Add(product);
+            await _context.SaveChangesAsync();
+
+            // Redirect or return view as necessary
+            return RedirectToAction("ProductList", "AdminPanel");
         }
 
-        // GET: AdminPanelController/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View();
-        }
-
-        // POST: AdminPanelController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public async Task<IActionResult> ProductEdit(Guid Id, string ProductName, string ProductAuthor, Guid CategoryId, double Price, string Description, int MainImageIndex, List<IFormFile> Images, string RemovedImageIds)
         {
+            var product = await _context.Products.Include(p => p.ProductImages).FirstOrDefaultAsync(p => p.Id == Id);
+
+            if (product == null)
+            {
+                return NotFound();
+            }
+
+            // Update product details
+            product.ProductName = ProductName;
+            product.ProductAuthor = ProductAuthor;
+            product.CategoryId = CategoryId;
+            product.Price = Price;
+            product.Description = Description;
+
+            // Convert to List<ProductImages> for indexing
+            var productImagesList = product.ProductImages.ToList();
+
+            // Remove deleted images from database and file system
+            if (!string.IsNullOrEmpty(RemovedImageIds))
+            {
+                var removedImageIdList = RemovedImageIds.Split(',').Select(Guid.Parse).ToList();
+                foreach (var imageId in removedImageIdList)
+                {
+                    var image = productImagesList.FirstOrDefault(img => img.Id == imageId);
+                    if (image != null)
+                    {
+                        // Remove the file from the file system
+                        var filePath = Path.Combine(_hostEnvironment.WebRootPath, image.ProductImage.TrimStart('/'));
+                        if (System.IO.File.Exists(filePath))
+                        {
+                            System.IO.File.Delete(filePath);
+                        }
+
+                        // Remove the image from the database
+                        product.ProductImages.Remove(image);
+                        _context.ProductImages.Remove(image);
+                    }
+                }
+            }
+
+            // Handle image uploads
+            if (Images != null && Images.Count > 0)
+            {
+                foreach (var imageFile in Images)
+                {
+                    if (imageFile.Length > 0)
+                    {
+                        var fileName = Path.GetFileNameWithoutExtension(imageFile.FileName);
+                        var extension = Path.GetExtension(imageFile.FileName);
+                        var uniqueFileName = $"{fileName}_{Guid.NewGuid()}{extension}";
+                        var filePath = Path.Combine(_hostEnvironment.WebRootPath, "images", uniqueFileName);
+
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await imageFile.CopyToAsync(stream);
+                        }
+
+                        var image = new ProductImages
+                        {
+                            Id = Guid.NewGuid(),
+                            ProductId = product.Id,
+                            ProductImage = "/images/" + uniqueFileName,
+                            MainImage = false,
+                            CreatedTimestamp = DateTime.Now
+                        };
+                        product.ProductImages.Add(image);
+                    }
+                }
+            }
+
+            // Update main image
+            if (MainImageIndex >= 0 && MainImageIndex < productImagesList.Count)
+            {
+                foreach (var image in product.ProductImages)
+                {
+                    image.MainImage = false;
+                }
+                productImagesList[MainImageIndex].MainImage = true;
+            }
+
             try
             {
-                return RedirectToAction(nameof(Index));
+                await _context.SaveChangesAsync();
             }
-            catch
+            catch (DbUpdateConcurrencyException ex)
             {
-                return View();
+                _logger.LogError(ex.Message);
+                if (!_context.Products.Any(p => p.Id == product.Id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
             }
+
+            // Redirect or return view as necessary
+            return RedirectToAction("ProductList", "AdminPanel");
         }
 
-        // GET: AdminPanelController/Delete/5
-        public ActionResult Delete(int id)
+
+        [HttpGet]
+        public async Task<IActionResult> ProductDelete(Guid id)
         {
-            return View();
+            var product = await _context.Products.FindAsync(id);
+            _context.Products.Remove(product);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("ProductList", "AdminPanel");
         }
 
-        // POST: AdminPanelController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        private bool ProductExists(Guid id)
         {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+            return _context.Products.Any(e => e.Id == id);
         }
     }
 }

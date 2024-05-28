@@ -50,6 +50,7 @@ namespace book_store_app_marian.Controllers
             };
 
             ViewBag.ErrorMessage = TempData["ErrorMessage"]?.ToString();
+            ViewBag.ToastSuccessMessage = TempData["ToastSuccessMessage"]?.ToString();
 
             // related products view bag
             ViewBag.RelatedProducts = _context.Products
@@ -155,6 +156,18 @@ namespace book_store_app_marian.Controllers
         [HttpGet]
         public async Task<IActionResult> Search([FromQuery] string searchTerm, [FromQuery] string categoryName, [FromQuery] string orderBy, [FromQuery] double? minPrice, [FromQuery] double? maxPrice, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
+
+            var findProduct = _context.Products
+            .Where(p => p.Id.ToString() == searchTerm)
+            .FirstOrDefault();
+
+            if (findProduct != null)
+            {
+                TempData["ToastSuccessMessage"] = "You have been guided to the location of the book.";
+                return RedirectToAction("Index", "Product", new { id = findProduct.Id.ToString() });
+            }
+
+
             ViewBag.SearchTerm = searchTerm;
             ViewBag.CategoryName = categoryName;
             ViewBag.OrderBy = orderBy;
@@ -260,7 +273,7 @@ namespace book_store_app_marian.Controllers
             {
                 _logger.LogError(ex.Message);
             }
-            
+
             TempData["ErrorMessage"] = "Something went wrong.";
             return RedirectToAction("Index", "Product", new { id = model.Id.ToString() }); // Redirect to the product details page
         }
