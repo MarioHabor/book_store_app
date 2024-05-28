@@ -192,45 +192,17 @@ namespace book_store_app_marian.Controllers
                 return NotFound();
             }
 
-            ModelState.Remove("Users");
-            ModelState.Remove("Categories");
-
-            if (ModelState.IsValid)
+            try
             {
-                try
-                {
-                    _context.Update(categoryModel.categoriesModel);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!CategoryExists(categoryModel.categoriesModel.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(CategoryList));
+                _context.Update(categoryModel.categoriesModel);
+                await _context.SaveChangesAsync();
             }
-
-            var categories = await _context.Categories.ToListAsync();
-
-            ViewModel ViewModel = new ViewModel()
+            catch (DbUpdateConcurrencyException)
             {
-                Categories = categories,
-                categoriesModel = categoryModel.categoriesModel
-            };
-
-            return View(ViewModel);
+                throw;
+            }
+            return RedirectToAction("EditCategory", "AdminPanel", new { id = id.ToString() });
             
-        }
-
-        private bool CategoryExists(Guid id)
-        {
-            return _context.Categories.Any(e => e.Id == id);
         }
 
         // GET: AdminPanel/DeleteCategory/5
@@ -260,113 +232,25 @@ namespace book_store_app_marian.Controllers
         }
 
         // POST: AdminPanel/DeleteCategory/5
-        [HttpPost]
+        [HttpPost, ActionName("DeleteCategoryConfirmed")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteCategoryConfirmed(ViewModel categoryModel)
+        public async Task<IActionResult> DeleteCategoryConfirmed(Guid id)
         {
-
-            ModelState.Remove("Users");
-            ModelState.Remove("Categories");
-            ModelState.Remove("categoriesModel.CategoryName");
-
-            if (ModelState.IsValid)
+            var category = await _context.Categories.FindAsync(id);
+            if (category == null)
             {
-                try
-                {
-                    _context.Remove(categoryModel.categoriesModel);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!CategoryExists(categoryModel.categoriesModel.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                return NotFound();
+            }
+
+            try
+            {
+                _context.Categories.Remove(category);
+                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(CategoryList));
             }
-
-            var categories = await _context.Categories.ToListAsync();
-
-            ViewModel ViewModel = new ViewModel()
+            catch (DbUpdateConcurrencyException)
             {
-                Categories = categories,
-                categoriesModel = categoryModel.categoriesModel
-            };
-
-            return View(ViewModel);
-        }
-
-        // GET: AdminPanelController/Details/5
-        public ActionResult Details(int id)
-        {
-            return View();
-        }
-
-        // GET: AdminPanelController/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: AdminPanelController/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: AdminPanelController/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View();
-        }
-
-        // POST: AdminPanelController/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: AdminPanelController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
-        // POST: AdminPanelController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
+                throw;
             }
         }
 
@@ -448,38 +332,111 @@ namespace book_store_app_marian.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ProductEdit(Guid id, [Bind("Id,CategoryId,ProductAuthor,ProductName,Price,Description,CreatedTimestamp")] Products product)
+        public async Task<IActionResult> ProductEdit(Guid Id, string ProductName, string ProductAuthor, Guid CategoryId, double Price, string Description, int MainImageIndex, List<IFormFile> Images, string RemovedImageIds)
         {
-            if (id != product.Id)
+            var product = await _context.Products.Include(p => p.ProductImages).FirstOrDefaultAsync(p => p.Id == Id);
+
+            if (product == null)
             {
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            // Update product details
+            product.ProductName = ProductName;
+            product.ProductAuthor = ProductAuthor;
+            product.CategoryId = CategoryId;
+            product.Price = Price;
+            product.Description = Description;
+
+            // Convert to List<ProductImages> for indexing
+            var productImagesList = product.ProductImages.ToList();
+
+            // Remove deleted images from database and file system
+            if (!string.IsNullOrEmpty(RemovedImageIds))
             {
-                try
+                var removedImageIdList = RemovedImageIds.Split(',').Select(Guid.Parse).ToList();
+                foreach (var imageId in removedImageIdList)
                 {
-                    _context.Update(product);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ProductExists(product.Id))
+                    var image = productImagesList.FirstOrDefault(img => img.Id == imageId);
+                    if (image != null)
                     {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
+                        // Remove the file from the file system
+                        var filePath = Path.Combine(_hostEnvironment.WebRootPath, image.ProductImage.TrimStart('/'));
+                        if (System.IO.File.Exists(filePath))
+                        {
+                            System.IO.File.Delete(filePath);
+                        }
+
+                        // Remove the image from the database
+                        product.ProductImages.Remove(image);
+                        _context.ProductImages.Remove(image);
                     }
                 }
-                return RedirectToAction("ProductList", "AdminPanel");
             }
+
+            // Handle image uploads
+            if (Images != null && Images.Count > 0)
+            {
+                foreach (var imageFile in Images)
+                {
+                    if (imageFile.Length > 0)
+                    {
+                        var fileName = Path.GetFileNameWithoutExtension(imageFile.FileName);
+                        var extension = Path.GetExtension(imageFile.FileName);
+                        var uniqueFileName = $"{fileName}_{Guid.NewGuid()}{extension}";
+                        var filePath = Path.Combine(_hostEnvironment.WebRootPath, "images", uniqueFileName);
+
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await imageFile.CopyToAsync(stream);
+                        }
+
+                        var image = new ProductImages
+                        {
+                            Id = Guid.NewGuid(),
+                            ProductId = product.Id,
+                            ProductImage = "/images/" + uniqueFileName,
+                            MainImage = false,
+                            CreatedTimestamp = DateTime.Now
+                        };
+                        product.ProductImages.Add(image);
+                    }
+                }
+            }
+
+            // Update main image
+            if (MainImageIndex >= 0 && MainImageIndex < productImagesList.Count)
+            {
+                foreach (var image in product.ProductImages)
+                {
+                    image.MainImage = false;
+                }
+                productImagesList[MainImageIndex].MainImage = true;
+            }
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                _logger.LogError(ex.Message);
+                if (!_context.Products.Any(p => p.Id == product.Id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            // Redirect or return view as necessary
             return RedirectToAction("ProductList", "AdminPanel");
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+
+        [HttpGet]
         public async Task<IActionResult> ProductDelete(Guid id)
         {
             var product = await _context.Products.FindAsync(id);

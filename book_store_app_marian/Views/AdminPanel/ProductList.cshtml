@@ -1,16 +1,15 @@
 @model book_store_app_marian.Models.ViewModel
 
 @{
-    ViewData["Title"] = "Category List";
+    ViewData["Title"] = "Book List";
 }
 
-    <style>
-        .selected {
-            border: 5px solid #0d6efd !important;
-        }
-    </style>
+<style>
+    .selected {
+        border: 5px solid #0d6efd !important;
+    }
+</style>
 
-</div>
 <div class="container">
     <div class="row justify-content-between">
         <div class="col-2">
@@ -25,7 +24,7 @@
             <div class="col-lg-12">
                 <div class="main-box clearfix">
                     <div class="table-responsive">
-                        <table class="table user-list">
+                        <table class="table table-striped user-list">
                             <thead>
                                 <tr>
                                     <th><span>Product Name</span></th>
@@ -44,13 +43,15 @@
                                             {
                                                 <img src="@product.ProductImages.FirstOrDefault(pi => pi.MainImage)?.ProductImage"
                                                     alt="">
-                                                <a asp-controller="Product" asp-action="Index" asp-route-id="@product.Id" class="user-link">@product.ProductName</a>
+                                                <a asp-controller="Product" asp-action="Index" asp-route-id="@product.Id"
+                                                    class="user-link">@product.ProductName</a>
                                                 <span class="user-subhead">@product.Categories.CategoryName</span>
                                             }
                                             else
                                             {
                                                 <img src="https://bootdey.com/img/Content/avatar/avatar1.png" alt="">
-                                                <a asp-controller="Product" asp-action="Index" asp-route-id="@product.Id" class="user-link">@product.ProductName</a>
+                                                <a asp-controller="Product" asp-action="Index" asp-route-id="@product.Id"
+                                                    class="user-link">@product.ProductName</a>
                                                 <span class="user-subhead">@product.Categories.CategoryName</span>
                                             }
 
@@ -62,25 +63,31 @@
                                             <span class="label label-default">@product.Price</span>
                                         </td>
                                         <td>
-                                            <a asp-controller="Product" asp-action="Index" asp-route-id="@product.Id">@product.ProductAuthor</a>
+                                            <a asp-controller="Product" asp-action="Index"
+                                                asp-route-id="@product.Id">@product.ProductAuthor</a>
                                         </td>
                                         <td style="width: 20%;">
-                                            <a asp-controller="Product" asp-action="Index" asp-route-id="@product.Id" class="table-link">
+                                            <a asp-controller="Product" asp-action="Index" asp-route-id="@product.Id"
+                                                class="table-link">
                                                 <span class="fa-stack">
                                                     <i class="fa fa-square fa-stack-2x"></i>
                                                     <i class="fa fa-search-plus fa-stack-1x fa-inverse"></i>
                                                 </span>
                                             </a>
-                                            <a asp-controller="Product" asp-action="Index" asp-route-id="@product.Id" class="table-link">
+                                            @* <form method="post" class="table-link danger" asp-controller="AdminPanel"
+                                                asp-action="ProductDelete" asp-route-id="@product.Id">
+                                                <button type="submit" class="table-link danger">
+                                                    <span class="fa-stack">
+                                                        <i class="fa fa-square fa-stack-2x"></i>
+                                                        <i class="fa-solid fa-trash-can fa-stack-1x fa-inverse"></i>
+                                                    </span>
+                                                </button>
+                                            </form> *@
+                                            <a asp-controller="AdminPanel" asp-action="ProductDelete" asp-route-id="@product.Id"
+                                                class="table-link danger">
                                                 <span class="fa-stack">
-                                                    <i class="fa fa-square fa-stack-2x"></i>
-                                                    <i class="fa fa-pencil fa-stack-1x fa-inverse"></i>
-                                                </span>
-                                            </a>
-                                            <a asp-controller="Product" asp-action="Index" asp-route-id="@product.Id" class="table-link danger">
-                                                <span class="fa-stack">
-                                                    <i class="fa fa-square fa-stack-2x"></i>
-                                                    <i class="fa-solid fa-trash-can fa-stack-1x fa-inverse"></i>
+<i class="fa fa-square fa-stack-2x"></i>
+                                                        <i class="fa-solid fa-trash-can fa-stack-1x fa-inverse"></i>
                                                 </span>
                                             </a>
                                         </td>
@@ -97,96 +104,101 @@
 
 
     <!-- Create product Modal -->
-<div class="modal fade" id="createProducteModal" tabindex="-1" aria-labelledby="createProducteModal" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="searchModalLabel">Add New Book</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form asp-controller="AdminPanel" asp-action="ProductCreate" method="post" enctype="multipart/form-data">
-                    <div class="form-group mb-3">
-                        <label for="productName">Book Title</label>
-                        <input type="text" name="ProductName" class="form-control" id="productName" required>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <label for="productAuthor">Author Name</label>
-                            <input type="text" name="ProductAuthor" class="form-control" id="productAuthor" required>
+    <div class="modal fade" id="createProducteModal" tabindex="-1" aria-labelledby="createProducteModal"
+        aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="searchModalLabel">Add New Book</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form asp-controller="AdminPanel" asp-action="ProductCreate" method="post"
+                        enctype="multipart/form-data">
+                        <div class="form-group mb-3">
+                            <label for="productName">Book Title</label>
+                            <input type="text" name="ProductName" class="form-control" id="productName" required>
                         </div>
-                        <div class="col-md-4">
-                            <label for="categoryId">Select Category</label>
-                            <select name="CategoryId" class="form-control" id="categoryId" required>
-                                <option value="">Drop down menu</option>
-                                @foreach (var category in Model.Categories)
-                                {
-                                    <option value="@category.Id">@category.CategoryName</option>
-                                }
-                            </select>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="productAuthor">Author Name</label>
+                                <input type="text" name="ProductAuthor" class="form-control" id="productAuthor"
+                                    required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="categoryId">Select Category</label>
+                                <select name="CategoryId" class="form-control" id="categoryId" required>
+                                    <option value="">Drop down menu</option>
+                                    @foreach (var category in Model.Categories)
+                                    {
+                                        <option value="@category.Id">@category.CategoryName</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="price">Price</label>
+                                <input type="number" name="Price" class="form-control" id="price" step="0.01" min="0.01"
+                                    required>
+                            </div>
                         </div>
-                        <div class="col-md-4">
-                            <label for="price">Price</label>
-                            <input type="number" name="Price" class="form-control" id="price" step="0.01" min="0.01" required>
+                        <div class="form-group mb-3">
+                            <label for="description">Description</label>
+                            <textarea name="Description" class="form-control" id="description" rows="3"
+                                required></textarea>
                         </div>
-                    </div>
-                    <div class="form-group mb-3">
-                        <label for="description">Description</label>
-                        <textarea name="Description" class="form-control" id="description" rows="3" required></textarea>
-                    </div>
-                    <div class="form-group mb-3">
-                        <h4 class="my-4">Upload and Select the Main Image</h4>
-                        <input type="file" id="imageInput" name="Images" multiple class="form-control mb-3" />
-                        <div id="imageContainer" class="d-flex flex-wrap mb-3"></div>
-                        <input type="hidden" name="MainImageIndex" id="mainImageIndex">
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary" onclick="prepareImageData()">Add</button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    </div>
-                </form>
+                        <div class="form-group mb-3">
+                            <h4 class="my-4">Upload and Select the Main Image</h4>
+                            <input type="file" id="imageInput" name="Images" multiple class="form-control mb-3" />
+                            <div id="imageContainer" class="d-flex flex-wrap mb-3"></div>
+                            <input type="hidden" name="MainImageIndex" id="mainImageIndex">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary" onclick="prepareImageData()">Add</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<script>
-    let selectedImageIndex = -1;
+    <script>
+        let selectedImageIndex = -1;
 
-    document.getElementById('imageInput').addEventListener('change', function(event) {
-        const imageContainer = document.getElementById('imageContainer');
-        imageContainer.innerHTML = ''; // Clear previous images
-        const files = event.target.files;
+        document.getElementById('imageInput').addEventListener('change', function (event) {
+            const imageContainer = document.getElementById('imageContainer');
+            imageContainer.innerHTML = ''; // Clear previous images
+            const files = event.target.files;
 
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            const reader = new FileReader();
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const reader = new FileReader();
 
-            reader.onload = function(e) {
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                img.alt = file.name;
-                img.className = 'img-thumbnail m-2';
-                img.style.maxWidth = '200px';
-                img.style.cursor = 'pointer';
-                img.addEventListener('click', function() {
-                    // Remove 'selected' class from any other images
-                    const previouslySelected = document.querySelector('.selected');
-                    if (previouslySelected) {
-                        previouslySelected.classList.remove('selected');
-                    }
-                    // Add 'selected' class to the clicked image
-                    img.classList.add('selected');
-                    selectedImageIndex = i;
-                });
-                imageContainer.appendChild(img);
-            };
+                reader.onload = function (e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.alt = file.name;
+                    img.className = 'img-thumbnail m-2';
+                    img.style.maxWidth = '200px';
+                    img.style.cursor = 'pointer';
+                    img.addEventListener('click', function () {
+                        // Remove 'selected' class from any other images
+                        const previouslySelected = document.querySelector('.selected');
+                        if (previouslySelected) {
+                            previouslySelected.classList.remove('selected');
+                        }
+                        // Add 'selected' class to the clicked image
+                        img.classList.add('selected');
+                        selectedImageIndex = i;
+                    });
+                    imageContainer.appendChild(img);
+                };
 
-            reader.readAsDataURL(file);
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function prepareImageData() {
+            document.getElementById('mainImageIndex').value = selectedImageIndex;
         }
-    });
-
-    function prepareImageData() {
-        document.getElementById('mainImageIndex').value = selectedImageIndex;
-    }
-</script>
+    </script>
