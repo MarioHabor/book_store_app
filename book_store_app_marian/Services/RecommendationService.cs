@@ -27,7 +27,7 @@ namespace book_store_app_marian.Services
                 .Where(p => purchasedCategoryIds.Contains(p.CategoryId) &&
                             !_context.Purchases.Any(pur => pur.ProductId == p.Id && pur.UserId == userId))
                 .Include(p => p.ProductImages) // Include ProductImages
-                .Take(9) // limit to 9 recommendations
+                .Take(4) // limit to 9 recommendations
                 .ToList();
 
             // Create a list of RecommendedProductViewModel

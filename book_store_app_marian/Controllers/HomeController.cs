@@ -59,6 +59,26 @@ namespace book_store_app_marian.Controllers
             return View(ViewModel);
         }
 
+        public async Task<IActionResult> About()
+        {
+            var categories = await _context.Categories.ToListAsync();
+            ViewModel ViewModel = new ViewModel()
+            {
+                Categories = categories
+            };
+            return View(ViewModel);
+        }
+
+        public async Task<IActionResult> ContactUs()
+        {
+            var categories = await _context.Categories.ToListAsync();
+            ViewModel ViewModel = new ViewModel()
+            {
+                Categories = categories
+            };
+            return View(ViewModel);
+        }
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
