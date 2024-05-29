@@ -107,23 +107,23 @@ namespace book_store_app_marian.Data
 
                 }
 
-                // seed users
+                // Seed users
                 if (context.Users.Count() < 20)
                 {
-                    var passwordHasher = new PasswordHasher<IdentityUser>();
                     var users = new Faker<IdentityUser>()
-                        .RuleFor(u => u.Id, f => Guid.NewGuid().ToString())
-                        .RuleFor(u => u.UserName, f => f.Internet.UserName())
-                        .RuleFor(u => u.NormalizedUserName, (f, u) => u.UserName.ToUpper())
-                        .RuleFor(u => u.Email, f => f.Internet.Email())
-                        .RuleFor(u => u.NormalizedEmail, (f, u) => u.Email.ToUpper())
-                        .RuleFor(u => u.EmailConfirmed, f => true)
-                        .RuleFor(u => u.PasswordHash, (f, u) => passwordHasher.HashPassword(u, "User@1234"))
-                        .RuleFor(u => u.SecurityStamp, f => Guid.NewGuid().ToString("D"));
+                            .RuleFor(u => u.UserName, f => f.Internet.Email()) // Use email as username
+                            .RuleFor(u => u.Email, (f, u) => u.UserName)
+                            .RuleFor(u => u.NormalizedUserName, (f, u) => u.UserName.ToUpper())
+                            .RuleFor(u => u.NormalizedEmail, (f, u) => u.Email.ToUpper())
+                            .RuleFor(u => u.EmailConfirmed, f => true)
+                            .RuleFor(u => u.SecurityStamp, f => Guid.NewGuid().ToString("D"));
 
                     var userList = users.Generate(20);
-                    context.Users.AddRange(userList);
-                    context.SaveChanges();
+
+                    foreach (var user in userList)
+                    {
+                        var result = userManager.CreateAsync(user, "User@1234").Result;
+                    }
                 }
 
                 // Seed purchases and reviews
