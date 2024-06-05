@@ -29,12 +29,6 @@ namespace book_store_app_marian.Controllers
                                         .Take(PageSize)
                                         .ToList();
 
-            // If product page is out of range return not fund
-            //if (products.IsNullOrEmpty()) { 
-            //    return NotFound();
-            
-            //}
-
             var categories = await _context.Categories.ToListAsync();
 
             var viewModel = new ViewModel

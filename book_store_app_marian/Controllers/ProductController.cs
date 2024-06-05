@@ -154,7 +154,10 @@ namespace book_store_app_marian.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Search([FromQuery] string searchTerm, [FromQuery] string categoryName, [FromQuery] string orderBy, [FromQuery] double? minPrice, [FromQuery] double? maxPrice, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> Search([FromQuery] string searchTerm, 
+        [FromQuery] string categoryName, [FromQuery] string orderBy, 
+        [FromQuery] double? minPrice, [FromQuery] double? maxPrice, 
+        [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
 
             var findProduct = _context.Products
@@ -244,12 +247,17 @@ namespace book_store_app_marian.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Purchase([FromForm] Products model)
         {
             try
             {
                 // get logged user model
                 var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                {
+                    throw new InvalidOperationException();
+                }
                 // var product = await _context.Products.FindAsync(productId);
                 var Purchase = new Purchases()
                 {

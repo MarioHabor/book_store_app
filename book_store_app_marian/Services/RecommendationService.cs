@@ -27,7 +27,7 @@ namespace book_store_app_marian.Services
                 .Where(p => purchasedCategoryIds.Contains(p.CategoryId) &&
                             !_context.Purchases.Any(pur => pur.ProductId == p.Id && pur.UserId == userId))
                 .Include(p => p.ProductImages) // Include ProductImages
-                .Take(4) // limit to 9 recommendations
+                .Take(4) // limit to 4 recommendations
                 .ToList();
 
             // Create a list of RecommendedProductViewModel
@@ -38,7 +38,8 @@ namespace book_store_app_marian.Services
                 ProductAuthor = p.ProductAuthor,
                 Price = p.Price,
                 CategoryName = p.Categories.CategoryName,
-                MainImageUrl = p.ProductImages.FirstOrDefault(pi => pi.MainImage)?.ProductImage ?? "https://bootdey.com/img/Content/avatar/avatar6.png"
+                MainImageUrl = p.ProductImages.FirstOrDefault(pi => pi.MainImage)?.ProductImage 
+                ?? "https://bootdey.com/img/Content/avatar/avatar6.png"
             }).ToList();
 
             return recommendedProductViewModels;

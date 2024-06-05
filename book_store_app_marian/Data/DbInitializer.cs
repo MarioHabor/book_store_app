@@ -68,7 +68,7 @@ namespace book_store_app_marian.Data
                     }
                     catch (Exception ex)
                     {
-                        // Debugging: Log any exceptions
+                        // Debugging by logging any exceptions
                         logger.LogError($"Error saving changes: {ex.Message}");
                     }
 
@@ -87,7 +87,7 @@ namespace book_store_app_marian.Data
 
                     foreach (var product in productList)
                     {
-                        int imageCount = random.Next(3, 5); // Randomly choose 1 to 4 images
+                        int imageCount = random.Next(3, 5); // Randomly choose 3 to 5 images
                         var selectedImages = imageUrls.OrderBy(x => random.Next()).Take(imageCount).ToList();
 
                         bool mainImageSet = false;
@@ -154,8 +154,8 @@ namespace book_store_app_marian.Data
                     var reviewFaker = new Faker<Reviews>()
                         .RuleFor(p => p.Id, f => Guid.NewGuid())
                         .RuleFor(r => r.ProductId, f => f.PickRandom(purchasesList).ProductId)
-                        .RuleFor(r => r.UserId, (f, r) => purchasesList.First(p => p.ProductId == r.ProductId).UserId)
-                        .RuleFor(r => r.PurchaseId, (f, r) => purchasesList.First(p => p.ProductId == r.ProductId).Id)
+                        .RuleFor(r => r.UserId, (f, r) => f.PickRandom(purchasesList.Where(p => p.ProductId == r.ProductId)).UserId)
+                        .RuleFor(r => r.PurchaseId, (f, r) => f.PickRandom(purchasesList.Where(p => p.ProductId == r.ProductId)).Id)
                         .RuleFor(r => r.Review, f => f.Lorem.Sentence(10))
                         .RuleFor(r => r.CreatedTimestamp, f => f.Date.Past())
                         .RuleFor(r => r.Rating, f => f.Random.Byte(1, 5));

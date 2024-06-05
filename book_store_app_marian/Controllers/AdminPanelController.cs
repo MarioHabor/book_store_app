@@ -276,10 +276,10 @@ namespace book_store_app_marian.Controllers
         public async Task<IActionResult> ProductCreate([FromForm] string ProductName, string ProductAuthor, Guid CategoryId, double Price, string Description, int MainImageIndex, List<IFormFile> Images)
         {
            if (Images == null || Images.Count == 0)
-            {
+           {
                 ModelState.AddModelError("", "Please upload at least one image.");
                 return View();
-            }
+           }
 
             // Create new product
             var product = new Products
@@ -330,113 +330,8 @@ namespace book_store_app_marian.Controllers
             return RedirectToAction("ProductList", "AdminPanel");
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ProductEdit(Guid Id, string ProductName, string ProductAuthor, Guid CategoryId, double Price, string Description, int MainImageIndex, List<IFormFile> Images, string RemovedImageIds)
-        {
-            var product = await _context.Products.Include(p => p.ProductImages).FirstOrDefaultAsync(p => p.Id == Id);
-
-            if (product == null)
-            {
-                return NotFound();
-            }
-
-            // Update product details
-            product.ProductName = ProductName;
-            product.ProductAuthor = ProductAuthor;
-            product.CategoryId = CategoryId;
-            product.Price = Price;
-            product.Description = Description;
-
-            // Convert to List<ProductImages> for indexing
-            var productImagesList = product.ProductImages.ToList();
-
-            // Remove deleted images from database and file system
-            if (!string.IsNullOrEmpty(RemovedImageIds))
-            {
-                var removedImageIdList = RemovedImageIds.Split(',').Select(Guid.Parse).ToList();
-                foreach (var imageId in removedImageIdList)
-                {
-                    var image = productImagesList.FirstOrDefault(img => img.Id == imageId);
-                    if (image != null)
-                    {
-                        // Remove the file from the file system
-                        var filePath = Path.Combine(_hostEnvironment.WebRootPath, image.ProductImage.TrimStart('/'));
-                        if (System.IO.File.Exists(filePath))
-                        {
-                            System.IO.File.Delete(filePath);
-                        }
-
-                        // Remove the image from the database
-                        product.ProductImages.Remove(image);
-                        _context.ProductImages.Remove(image);
-                    }
-                }
-            }
-
-            // Handle image uploads
-            if (Images != null && Images.Count > 0)
-            {
-                foreach (var imageFile in Images)
-                {
-                    if (imageFile.Length > 0)
-                    {
-                        var fileName = Path.GetFileNameWithoutExtension(imageFile.FileName);
-                        var extension = Path.GetExtension(imageFile.FileName);
-                        var uniqueFileName = $"{fileName}_{Guid.NewGuid()}{extension}";
-                        var filePath = Path.Combine(_hostEnvironment.WebRootPath, "images", uniqueFileName);
-
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await imageFile.CopyToAsync(stream);
-                        }
-
-                        var image = new ProductImages
-                        {
-                            Id = Guid.NewGuid(),
-                            ProductId = product.Id,
-                            ProductImage = "/images/" + uniqueFileName,
-                            MainImage = false,
-                            CreatedTimestamp = DateTime.Now
-                        };
-                        product.ProductImages.Add(image);
-                    }
-                }
-            }
-
-            // Update main image
-            if (MainImageIndex >= 0 && MainImageIndex < productImagesList.Count)
-            {
-                foreach (var image in product.ProductImages)
-                {
-                    image.MainImage = false;
-                }
-                productImagesList[MainImageIndex].MainImage = true;
-            }
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException ex)
-            {
-                _logger.LogError(ex.Message);
-                if (!_context.Products.Any(p => p.Id == product.Id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            // Redirect or return view as necessary
-            return RedirectToAction("ProductList", "AdminPanel");
-        }
-
-
         [HttpGet]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ProductDelete(Guid id)
         {
             var product = await _context.Products.FindAsync(id);
